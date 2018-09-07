@@ -243,7 +243,7 @@ class Scanner:
         
         if self.checkDummy(raidpic, x1, x2, y1, y2, hash, raidNo, radius):
             log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found dummy gym pic')
-            return 'dummy'
+            return 'dummy', True
             
         if foundMonCrops:
             gymHash = None
@@ -278,7 +278,7 @@ class Scanner:
         else:
             self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1, x2, y1, y2, radius)
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detected Gym-ID: ' + str(gymHash))
-            return gymHash
+            return gymHash, True
 
         if gymId:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found Gym - Gym-ID: '+ str(gymId))
@@ -287,10 +287,10 @@ class Scanner:
             else:
                 self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1, x2, y1, y2, radius)
 
-            return gymId
+            return gymId, foundMonCrops
         else:
             #we could not find the gym...
-            return None
+            return None, True
 
     def unknownfound(self, raidpic, type, zoom, raidNo, hash, captureTime, imageHash=0, lat=0, lng=0):
         
@@ -412,6 +412,7 @@ class Scanner:
         cv2.imwrite(raidhashPic, raidhash)
         
         genRaidHash = self.getImageHash(raidhashPic, False, raidNo)
+        genGymHash = self.getImageHash(raidhashPic, True, raidNo, radius=radius)
 
         #get (raidstart, raidend, raidtimer) as (timestamp, timestamp, human-readable hatch)
         raidtimer = self.detectRaidTime(img, hash, raidNo, radius)
@@ -500,11 +501,13 @@ class Scanner:
                 os.remove(filenameOfCrop)
                 return True
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Scanning Gym')
-            gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius, monFound[0])
+            _gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius, monFound[0])
+            gymId = _gymId[0]
 
         else:
             #let's get the gym we're likely scanning the image of
-            gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius)
+            _gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius)
+            gymId = _gymId[0]
             #gymId is either None for Gym not found or contains the gymId as String
             
         if gymId == 'dummy':
@@ -553,6 +556,8 @@ class Scanner:
             self.imageHash(raidhashPic, raidHashJson, False, 'raid', raidNo)
             
         self.unknownfound(raidhashPic, 'raid', False, raidNo, hash, False, genRaidHash, '0', '0')
+        if not _gymId[1]:
+            self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, genGymHash, '0', '0')
 
         os.remove(raidhashPic)
         os.remove(filenameOfCrop)
