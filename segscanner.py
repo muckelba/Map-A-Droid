@@ -559,7 +559,7 @@ class Scanner:
         if not _gymId[1] or eggfound:
             existHash = self.dbWrapper.checkForHash(str(genGymHash), 'gym', raidNo)
             if existHash[0]:
-                self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, existHash[1], '0', '0')
+                self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, existHash[2], '0', '0')
             else:
                 self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, genGymHash, '0', '0')
 
