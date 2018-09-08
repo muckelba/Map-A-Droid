@@ -251,7 +251,7 @@ class Scanner:
             gymHash = self.imageHashExists(raidpic, True, 'gym', raidNo, x1, x2, y1, y2, radius)
             if gymHash:
                 if not self.dbWrapper.checkGymsNearby(captureLat, captureLng, hash, raidNo, gymHash):
-                    self.dbWrapper.deleteHashTable('\'' + str(gymHash) + '\'', 'gym', 'in')
+                    self.dbWrapper.deleteHashTable('"' + str(gymHash) + '"', 'gym', 'in', 'hash')
                     gymHash = None
 
 
@@ -471,7 +471,7 @@ class Scanner:
                 return True
                 
             else:
-                self.dbWrapper.deleteHashTable('\'' + str(raidHash) + '\'', 'raid', 'in')
+                self.dbWrapper.deleteHashTable('"' + str(raidHash) + '"', 'raid', 'in', 'hash')
 
         raidlevel = self.detectLevel(img, hash, raidNo, radius) #we need the raid level to make the possible set of mons smaller
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Determined raidlevel to be %s' % (str(raidlevel)))

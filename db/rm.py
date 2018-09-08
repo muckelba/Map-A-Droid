@@ -162,7 +162,7 @@ class RmWrapper:
         connection.close()
         return True
 
-    def deleteHashTable(self, ids, type, mode):
+    def deleteHashTable(self, ids, type, mode, field):
         log.debug('Deleting old Hashes of type %s' % type)
         log.debug('Valid ids: %s' % ids)
         try:
@@ -174,7 +174,7 @@ class RmWrapper:
             return False
         cursor = connection.cursor()
         query = (' DELETE FROM trshash ' +
-                 ' where id ' + mode + ' (' + ids + ') ' +
+                 ' where ' + field + ' ' + mode + ' (' + ids + ') ' +
                  ' and type like \'%' + type + '%\'')
         log.debug(query)
         cursor.execute(query)

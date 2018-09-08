@@ -14,6 +14,7 @@ import os, glob, platform
 import re
 import datetime
 from time import gmtime, strftime
+from shutil import copyfile
 
 app = Flask(__name__)
 sys.setdefaultencoding('utf8')
@@ -48,29 +49,31 @@ def after_request(response):
 
 @app.route('/', methods=['GET'])
 def root():
-    return app.send_static_file('index.html')
+    return render_template('index.html')
 
 @app.route('/raids', methods=['GET'])
 def raids():
-    return app.send_static_file('raids.html')
+    return render_template('raids.html')
     
 @app.route('/gyms', methods=['GET'])
 def gyms():
-    return app.send_static_file('gyms.html')
+    return render_template('gyms.html')
 
 @app.route('/unknown', methods=['GET'])
 def unknown():
-    return app.send_static_file('unknown.html')
+    return render_template('unknown.html')
 
 @app.route("/submit_hash")
 def submit_hash():
     hash = request.args.get('hash')
     id = request.args.get('id')
     if dbWrapper.insertHash(hash, 'gym', id, '999'):
-        return 'Hash added - the Gym should now be recognized.'
         
         for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
+            copyfile(file, 'www_hash/gym_0_0_' + str(hash) + '.jpg')
             os.remove(file)
+            
+        return 'Hash added - the Gym should now be recognized.'
 
 @app.route("/near_gym")
 def near_gym():
@@ -94,8 +97,8 @@ def delete_hash():
     if not hash or not type:
         return 'Missing Argument...'
         
-    dbWrapper.deleteHashTable('\'' + str(hash) + '\'', 'type', 'in')
-    for file in glob.glob("www_hash/gym_*" + str(hash) + ".jpg"):
+    dbWrapper.deleteHashTable('"' + str(hash) + '"', type, 'in', 'hash')
+    for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
         os.remove(file)
  
     return 'Hash deleted ...'

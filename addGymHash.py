@@ -1,6 +1,7 @@
 from db.dbWrapper import DbWrapper
 from walkerArgs import parseArgs
 import os, glob
+from shutil import copyfile
 
 args = parseArgs()
 dbWrapper = DbWrapper(str(args.db_method), str(args.dbip), args.dbport, args.dbusername, args.dbpassword, args.dbname, args.timezone)
@@ -27,6 +28,7 @@ def main():
             print 'Hash added - the Gym should now be recognized.'
             
             for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
+                copyfile(file, 'www_hash/gym_0_0_' + str(hash) + '.jpg')
                 os.remove(file)
             
         else:
