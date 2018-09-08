@@ -46,6 +46,9 @@ def submit_hash():
     id = request.args.get('id')
     if dbWrapper.insertHash(hash, 'gym', id, '999'):
         return 'Hash added - the Gym should now be recognized.'
+        
+        for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
+            os.remove(file)
 
 @app.route("/near_gym")
 def near_gym():

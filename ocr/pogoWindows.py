@@ -107,7 +107,7 @@ class PogoWindows:
         return (self.__checkPostLoginOkButton(filename, hash, 'post_login_ok_driving', 26)
                 or self.__checkPostLoginOkButton(filename, hash, 'post_login_ok_private_property', 17))
 
-    def __readCircleCount(self,filename,hash,ratio, xcord = False, crop = False, click = False):
+    def __readCircleCount(self,filename,hash,ratio, xcord = False, crop = False, click = False, canny=False):
         log.debug("__readCircleCount: Reading circles")
 
         try:
@@ -129,11 +129,12 @@ class PogoWindows:
         gray = cv2.cvtColor(screenshotRead, cv2.COLOR_BGR2GRAY)
         # detect circles in the image
 
-        radMin = int((width / float(ratio) - 1) / 2)
-        radMax = int((width / float(ratio) + 1) / 2)
+        radMin = int((width / float(ratio) - 3) / 2)
+        radMax = int((width / float(ratio) + 3) / 2)
         
-        gray = cv2.GaussianBlur(gray, (3, 3), 0)
-        gray = cv2.Canny(gray, 100, 200, apertureSize=3)
+        if canny:
+            gray = cv2.GaussianBlur(gray, (3, 3), 0)
+            gray = cv2.Canny(gray, 100, 50, apertureSize=3)
         
         log.debug("__readCircleCount: Detect radius of circle: Min " + str(radMin) + " Max " + str(radMax))
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, width / 8, param1=100, param2=15, minRadius=radMin,
@@ -166,7 +167,7 @@ class PogoWindows:
             log.debug("__readCircleCount: Determined screenshot to have 0 Circle")
             return -1
             
-    def __readCircleCords(self,filename,hash,ratio, crop = False):
+    def __readCircleCords(self,filename,hash,ratio, crop = False, canny=False):
         log.debug("__readCircleCords: Reading circlescords")
 
         try:
@@ -191,8 +192,9 @@ class PogoWindows:
         radMin = int((width / float(ratio) - 3) / 2)
         radMax = int((width / float(ratio) + 3) / 2)
         
-        gray = cv2.GaussianBlur(gray, (3, 3), 0)
-        gray = cv2.Canny(gray, 100, 200, apertureSize=3)
+        if canny:
+            gray = cv2.GaussianBlur(gray, (3, 3), 0)
+            gray = cv2.Canny(gray, 100, 50, apertureSize=3)
         
         log.debug("__readCircleCords: Detect radius of circle: Min " + str(radMin) + " Max " + str(radMax))
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, width / 8, param1=100, param2=15, minRadius=radMin,
@@ -431,7 +433,7 @@ class PogoWindows:
             return False
 
         log.info('Raidscreen not running...')
-        posNearby = self.__readCircleCords(filename,hash,7.05, crop = True)
+        posNearby = self.__readCircleCords(filename,hash,7.05, crop = True, canny=True)
         if posNearby[0]:
             self.screenWrapper.click(int(posNearby[4]*0.95),int(posNearby[2]))
         time.sleep(4)
@@ -472,7 +474,7 @@ class PogoWindows:
 
         cv2.imwrite(os.path.join(self.tempDirPath, str(hash) + '_exitcircle.jpg'), image)
              
-        if self.__readCircleCount(os.path.join(self.tempDirPath, str(hash) + '_exitcircle.jpg'), hash, float(radiusratio), xcord=False, crop=True, click=True) > 0:
+        if self.__readCircleCount(os.path.join(self.tempDirPath, str(hash) + '_exitcircle.jpg'), hash, float(radiusratio), xcord=False, crop=True, click=True, canny=True) > 0:
             return True
 
     #checks for X button on any screen... could kill raidscreen, handle properly
