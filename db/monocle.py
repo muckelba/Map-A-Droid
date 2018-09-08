@@ -147,12 +147,12 @@ class MonocleWrapper:
             return None
         cursor = connection.cursor()
 
-        query = ('SELECT id, BIT_COUNT( '
+        query = ('SELECT id, hash, BIT_COUNT( '
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
-                                                       'type, count FROM trshash '
-                                                       'HAVING hamming_distance < 4 and type = \'' + str(type) + '\' '
-                                                                                                                 'ORDER BY hamming_distance ASC')
+                 'type, count FROM trshash '
+                 'HAVING hamming_distance < 4 and type = \'' + str(type) + '\' '
+                 'ORDER BY hamming_distance ASC')
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ' + query)
         cursor.execute(query)
@@ -167,7 +167,7 @@ class MonocleWrapper:
             for row in data:
                 log.debug(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ID: ' + str(row[0]))
-                return True, row[0], row[3]
+                return True, row[1], row[4]
         else:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
