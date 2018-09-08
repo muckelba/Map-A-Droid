@@ -556,7 +556,7 @@ class Scanner:
             self.imageHash(raidhashPic, raidHashJson, False, 'raid', raidNo)
             
         self.unknownfound(raidhashPic, 'raid', False, raidNo, hash, False, genRaidHash, '0', '0')
-        if not _gymId[1]:
+        if not _gymId[1] or eggfound:
             existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
             if existHash[0]:
                 self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, existHash[1], '0', '0')

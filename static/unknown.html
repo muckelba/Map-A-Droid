@@ -30,14 +30,14 @@
 
 		   $.ajax({
 		   type: "GET",
-		   url: "http://127.0.0.1:8080/get_unknows",
+		   url: "http://127.0.0.1:5000/get_unknows",
 		   success: function(result)
 		   {
 		   console.log(result);
-		   var output="<table><thead><tr><th>Name</th><th>Hash</th><th>Hashpic</th><th>Gympic</th></thead><tbody>";
+		   var output="<table><thead><tr><th>Hash</th><th>Hashpic</th><th>Lat</th><th>Lot</th></thead><tbody>";
 		   for (var i in result)
 		   {
-		   output+="<tr><td>" + result[i].name + "</td><td>" + result[i].hashvalue + "</td><td><img src='../" + result[i].filename + "' width=200></td><td><img src='../" + result[i].gymimage + "' width=200></td></tr>";
+		   output+="<tr><td>" + result[i].hashvalue + "</td><td><img src='../" + result[i].filename + "' width=200></td><td>" + result[i].lat + "</td><td>" + result[i].lon + "</td></tr>";
 		   }
 		   output+="</tbody></table>";
 

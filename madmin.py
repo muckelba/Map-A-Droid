@@ -10,8 +10,10 @@ from walkerArgs import parseArgs
 from db.dbWrapper import DbWrapper
 import sys
 import json
-import os, glob
+import os, glob, platform
 import re
+import datetime
+from time import gmtime, strftime
 
 app = Flask(__name__)
 sys.setdefaultencoding('utf8')
@@ -71,6 +73,20 @@ def near_gym():
         nearGym.append(ngjson)
  
     return jsonify(nearGym)
+    
+@app.route("/delete_hash")
+def delete_hash():
+    nearGym = []
+    hash = request.args.get('hash')
+    type = request.args.get('type')
+    if not hash or not type:
+        return 'Missing Argument...'
+        
+    dbWrapper.deleteHashTable('\'' + str(hash) + '\'', 'type', 'in')
+    for file in glob.glob("www_hash/gym_*" + str(hash) + ".jpg"):
+        os.remove(file)
+ 
+    return 'Hash deleted ...'
 
 @app.route("/get_gyms")
 def get_gyms():
@@ -83,6 +99,9 @@ def get_gyms():
         
         _gymid = dbWrapper.checkForHash(str(hashvalue), 'gym', 1)
         gymid = _gymid[1]
+        count = _gymid[2]
+
+        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
 
         name = 'unknown'
         lat = '0'
@@ -99,7 +118,7 @@ def get_gyms():
             if data[str(gymid)]["description"]:
                 description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
 
-        gymJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage })
+        gymJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate })
         gyms.append(gymJson)
 
     return jsonify(gyms) 
@@ -129,6 +148,23 @@ def pushHashes(path):
 def pushAssets(path):
     return send_from_directory(args.pogoasset+'/pokemon_icons/', path)    
     
+    
+def creation_date(path_to_file):
+    """
+    Try to get the date that a file was created, falling back to when it was
+    last modified if that isn't possible.
+    See http://stackoverflow.com/a/39501288/1709587 for explanation.
+    """
+    if platform.system() == 'Windows':
+        return os.path.getctime(path_to_file)
+    else:
+        stat = os.stat(path_to_file)
+        try:
+            return stat.st_birthtime
+        except AttributeError:
+            # We're probably on Linux. No easy way to get creation dates here,
+            # so we'll settle for when its content was last modified.
+            return stat.st_mtime
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
 

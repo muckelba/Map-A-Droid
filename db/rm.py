@@ -105,7 +105,7 @@ class RmWrapper:
         query = ('SELECT id, BIT_COUNT( '
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
-                                                       'type FROM trshash '
+                                                       'type, count FROM trshash '
                                                        'HAVING hamming_distance < 4 and type = \'' + str(type) + '\' '
                                                                                                                  'ORDER BY hamming_distance ASC')
 
@@ -124,11 +124,11 @@ class RmWrapper:
             for row in data:
                 log.debug(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ID: ' + str(row[0]))
-                return True, row[0]
+                return True, row[0], row[3]
         else:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
-            return False, None
+            return False, None, None
 
     def insertHash(self, imghash, type, id, raidNo):
         doubleCheck = self.checkForHash(imghash, type, raidNo)
