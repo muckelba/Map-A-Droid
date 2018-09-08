@@ -431,11 +431,11 @@ class PogoWindows:
         if self.__checkRaidLine(filename, hash, leftSide=True, clickinvers=True):
             log.info('Raidscreen not running but nearby open')
             return False
+            
+        height, width, _ = screenshotRead.shape
 
         log.info('Raidscreen not running...')
-        posNearby = self.__readCircleCords(filename,hash,7.05, crop = True, canny=True)
-        if posNearby[0]:
-            self.screenWrapper.click(int(posNearby[4]*0.95),int(posNearby[2]))
+        self.screenWrapper.click(int(width - ( width / 7.2)), int(height - ( height / 12.19)))
         time.sleep(4)
         return False
 

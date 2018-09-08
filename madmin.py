@@ -36,9 +36,17 @@ def activate_job():
     thread = threading.Thread(target=run_job)
     thread.start()
 
-@app.route("/")
-def hello():
-    return "Missing Frontend! Oh No! :D"
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', '*')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  return response
+
+
+@app.route('/', methods=['GET'])
+def root():
+    return app.send_static_file('index.html')
 
 @app.route("/submit_hash")
 def submit_hash():
@@ -122,6 +130,6 @@ def pushAssets(path):
     return send_from_directory(args.pogoasset+'/pokemon_icons/', path)    
     
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=5000)
 
     

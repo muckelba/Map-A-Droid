@@ -517,7 +517,7 @@ class Scanner:
         if gymId is None:
             #gym unknown...
             log.warning('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Could not determine gym, aborting analysis')
-            genGymHash = self.getImageHash(raidhashPic, True, raidNo)
+            genGymHash = self.getImageHash(raidhashPic, True, raidNo, radius=radius)
             self.unknownfound(filenameOfCrop, 'gym', False, raidNo, hash, captureTime, False, captureLat, captureLng)
             self.unknownfound(raidhashPic, 'unkgym', False, raidNo, hash, False, genGymHash, captureLat, captureLng)
             os.remove(filenameOfCrop)
@@ -557,7 +557,11 @@ class Scanner:
             
         self.unknownfound(raidhashPic, 'raid', False, raidNo, hash, False, genRaidHash, '0', '0')
         if not _gymId[1]:
-            self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, genGymHash, '0', '0')
+            existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
+            if existHash[0]:
+                self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, existHash[1], '0', '0')
+            else:
+                self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, genGymHash, '0', '0')
 
         os.remove(raidhashPic)
         os.remove(filenameOfCrop)

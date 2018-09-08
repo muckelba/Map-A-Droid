@@ -89,6 +89,8 @@ lastPogoRestart = None
 lastScreenHash = '0'
 lastScreenHashCount = 0
 
+redErrorCount = 0
+
 dbWrapper = DbWrapper(str(args.db_method), str(args.dbip), args.dbport, args.dbusername, args.dbpassword, args.dbname,
                       args.timezone)
 
@@ -291,11 +293,13 @@ def mergeRaidQueue(newQueue):
 
 
 def restartPogo():
+    global redErrorCount
     curTime = time.time()
     successfulStop = stopPogo()
     # TODO: errorhandling if it returned false, maybe try again next round?
     # TODO: check if pogo was closed...
     log.debug("restartPogo: stop pogo resulted in %s" % str(successfulStop))
+    redErrorCount = 0
     if successfulStop:
         telnMore.clearAppCache("com.nianticlabs.pokemongo")
         time.sleep(1)
@@ -352,6 +356,7 @@ def startPogo():
 def getToRaidscreen(maxAttempts, again=False):
     # check for any popups (including post login OK)
     global lastScreenshotTaken
+    global redErrorCount
 
     log.debug("getToRaidscreen: Trying to get to the raidscreen with %s max attempts..." % str(maxAttempts))
     pogoTopmost = telnMore.isPogoTopmost()
@@ -383,29 +388,25 @@ def getToRaidscreen(maxAttempts, again=False):
             lastScreenshotTaken = time.time()
 
     attempts = 0
-    redErrorCount = 0
+    
     if os.path.isdir('screenshot.png'):
         log.error("getToRaidscreen: screenshot.png is not a file/corrupted")
         return False
+    
+    if pogoWindowManager.isGpsSignalLost('screenshot.png', 123):
+        log.warning("getToRaidscreen: GPS signal error")
+        redErrorCount += 1
+        if redErrorCount > 3:
+            log.error("getToRaidscreen: Red error multiple times in a row, restarting")
+            restartPogo()
+    
     while not pogoWindowManager.checkRaidscreen('screenshot.png', 123):
         if attempts > maxAttempts:
             # could not reach raidtab in given maxAttempts
             log.error("getToRaidscreen: Could not get to raidtab within %s attempts" % str(maxAttempts))
             return False
 
-        if pogoWindowManager.isGpsSignalLost('screenshot.png', 123):
-            log.warning("getToRaidscreen: GPS signal error")
-            redErrorCount += 1
-            if redErrorCount > 3:
-                log.error("getToRaidscreen: Red error multiple times in a row, restarting")
-                restartPogo()
-            if not screenWrapper.getScreenshot('screenshot.png'):
-                log.error("getToRaidscreen: Failed retrieving screenshot before checking windows")
-                return False
-            else:
-                lastScreenshotTaken = time.time()
-            time.sleep(1)
-            continue
+
         # not using continue since we need to get a screen before the next round...
         found = pogoWindowManager.lookForButton('screenshot.png', 2.20, 3.01)
         if found:
@@ -448,7 +449,7 @@ def turnScreenOnAndStartPogo():
         time.sleep(args.post_turn_screen_on_delay)
     # check if pogo is running and start it if necessary
     log.warning("turnScreenOnAndStartPogo: (Re-)Starting Pogo")
-    restartPogo()
+    #restartPogo()
 
 
 def reopenRaidTab():
@@ -647,7 +648,7 @@ def main_thread():
                 # reopen raidtab and take screenshot...
                 log.warning("main: Count present but no raid shown, reopening raidTab")
                 reopenRaidTab()
-                tabOutAndInPogo()
+                #tabOutAndInPogo()
                 screenWrapper.getScreenshot('screenshot.png')
                 countOfRaids = pogoWindowManager.readRaidCircles('screenshot.png', 123)
             #    elif countOfRaids == 0:
