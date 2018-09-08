@@ -99,7 +99,7 @@ def get_gyms():
         
         _gymid = dbWrapper.checkForHash(str(hashvalue), 'gym', 1)
         gymid = _gymid[1]
-        count = _gymid[2]
+        count = _gymid[3]
 
         creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
 
