@@ -1,11 +1,11 @@
 <html
 <head>
  <meta charset="utf-8">
- <title>jQuery.ajax()</title>
+ <title>MADMIN - show Gym Matching</title>
  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
  </head>
 <body>
-<h1>Check unknown Gyms</h1>
+<h1>Check saved Gyms</h1>
 <div id="show-data"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -30,14 +30,14 @@
 
 		   $.ajax({
 		   type: "GET",
-		   url: "/get_unknows",
+		   url: "/get_gyms",
 		   success: function(result)
 		   {
 		   console.log(result);
-		   var output="<table><thead><tr><th>Hash</th><th>Hashpic</th><th>Lat</th><th>Lot</th></thead><tbody>";
+		   var output="<table><thead><tr><th>Name</th><th>Hash</th><th>Hashpic</th><th>Gympic</th><th>Hashcount</th><th>Creation Date</th></thead><tbody>";
 		   for (var i in result)
 		   {
-		   output+="<tr><td>" + result[i].hashvalue + "</td><td><img src='../" + result[i].filename + "' width=200></td><td>" + result[i].lat + "</td><td>" + result[i].lon + "</td></tr>";
+		   output+="<tr><td>" + result[i].name + "</td><td>" + result[i].hashvalue + "</td><td><img src='" + result[i].filename + "' width=200></td><td><img src='" + result[i].gymimage + "' width=200></td><td>" + result[i].count + "</td><td>" + result[i].creation + "<br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=gym' target=_new>Delete</a> </td></tr>";
 		   }
 		   output+="</tbody></table>";
 

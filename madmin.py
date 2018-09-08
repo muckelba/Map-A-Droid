@@ -50,6 +50,18 @@ def after_request(response):
 def root():
     return app.send_static_file('index.html')
 
+@app.route('/raids', methods=['GET'])
+def raids():
+    return app.send_static_file('raids.html')
+    
+@app.route('/gyms', methods=['GET'])
+def gyms():
+    return app.send_static_file('gyms.html')
+
+@app.route('/unknown', methods=['GET'])
+def unknown():
+    return app.send_static_file('unknown.html')
+
 @app.route("/submit_hash")
 def submit_hash():
     hash = request.args.get('hash')
@@ -122,6 +134,65 @@ def get_gyms():
         gyms.append(gymJson)
 
     return jsonify(gyms) 
+    
+@app.route("/get_raids")
+def get_raids():
+    raids = []
+    eggIdsByLevel = [1, 1, 2, 2, 3]
+    with open('gym_info.json') as f:
+        data = json.load(f)
+    for file in glob.glob("www_hash/raid_*.jpg"):
+        unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
+        hashvalue = (unkfile.group(3))
+        
+        raidid = dbWrapper.checkForHash(str(hashvalue), 'raid', 1)
+        raidjson = raidid[1]
+        count = raidid[3]
+        
+        raidHash_ = decodeHashJson(raidjson)
+        gymid = raidHash_[0]
+        lvl = raidHash_[1]
+        mon = int(raidHash_[2])
+        mon = "%03d"%mon
+        
+        if mon == '000':
+            type = 'egg'
+            monPic = ''
+        else:
+            type = 'mon'
+            monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
+            
+        eggId = eggIdsByLevel[int(lvl) - 1]
+        if eggId == 1:
+            eggPic = '/asset/static_assets/png/ic_raid_egg_normal.png'
+        if eggId == 2:
+            eggPic = '/asset/static_assets/png/ic_raid_egg_rare.png'
+        if eggId == 3:
+            eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
+            
+        
+
+        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+
+        name = 'unknown'
+        lat = '0'
+        lon = '0'
+        url = '0'
+        description = ''
+        
+        gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
+
+        if str(gymid) in data:
+            name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
+            lat = data[str(gymid)]["latitude"]
+            lon = data[str(gymid)]["longitude"]
+            if data[str(gymid)]["description"]:
+                description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
+
+        raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic })
+        raids.append(raidJson)
+
+    return jsonify(raids) 
 
 @app.route("/get_unknows")
 def get_unknows():
@@ -146,8 +217,16 @@ def pushHashes(path):
 
 @app.route('/asset/<path:path>', methods=['GET'])
 def pushAssets(path):
-    return send_from_directory(args.pogoasset+'/pokemon_icons/', path)    
-    
+    return send_from_directory(args.pogoasset, path)    
+
+
+def decodeHashJson(hashJson):
+    data = json.loads(hashJson)
+    raidGym = data['gym']
+    raidLvl = data["lvl"]
+    raidMon = data["mon"]
+
+    return raidGym, raidLvl, raidMon
     
 def creation_date(path_to_file):
     """
