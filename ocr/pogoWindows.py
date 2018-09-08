@@ -131,6 +131,10 @@ class PogoWindows:
 
         radMin = int((width / float(ratio) - 1) / 2)
         radMax = int((width / float(ratio) + 1) / 2)
+        
+        gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        gray = cv2.Canny(gray, 100, 200, apertureSize=3)
+        
         log.debug("__readCircleCount: Detect radius of circle: Min " + str(radMin) + " Max " + str(radMax))
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, width / 8, param1=100, param2=15, minRadius=radMin,
                                    maxRadius=radMax)
@@ -169,11 +173,11 @@ class PogoWindows:
             screenshotRead = cv2.imread(filename)
         except:
             log.error("Screenshot corrupted :(")
-            return -1
+            return False
 
         if screenshotRead is None:
             log.error("Screenshot corrupted :(")
-            return -1
+            return False
 
         height, width, _ = screenshotRead.shape
         
@@ -186,6 +190,10 @@ class PogoWindows:
 
         radMin = int((width / float(ratio) - 3) / 2)
         radMax = int((width / float(ratio) + 3) / 2)
+        
+        gray = cv2.GaussianBlur(gray, (3, 3), 0)
+        gray = cv2.Canny(gray, 100, 200, apertureSize=3)
+        
         log.debug("__readCircleCords: Detect radius of circle: Min " + str(radMin) + " Max " + str(radMax))
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, width / 8, param1=100, param2=15, minRadius=radMin,
                                    maxRadius=radMax)
