@@ -42,7 +42,7 @@
 			   } else {
 			   	monegg = "<img src='" + result[i].monPic + "' width=200>" 
 			   }
-		   output+="<tr><td>" + result[i].name + "<br><br>" + result[i].hashvalue + "<br><br>" + result[i].count + "</td><td><img src='" + result[i].filename + "' width=200></td><td><img src='" + result[i].gymimage + "' width=200></td><td>" + monegg + "</td><td>Level: " + result[i].level + "</td><td>" + result[i].creation + "<br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=raid' target=_new>Delete</a> </td></tr>";
+		   output+="<tr><td>" + result[i].name + "<br><br>" + result[i].hashvalue + "<br><br>" + result[i].count + "</td><td><img src='" + result[i].filename + "' width=200></td><td><img src='" + result[i].gymimage + "' width=200></td><td>" + monegg + "</td><td>Level: " + result[i].level + "</td><td>" + result[i].creation + "<br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=raid&redirect=raids'>Delete</a> </td></tr>";
 		   }
 		   output+="</tbody></table>";
 

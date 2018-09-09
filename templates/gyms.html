@@ -37,7 +37,7 @@
 		   var output="<table><thead><tr><th>Name</th><th>Hash</th><th>Hashpic</th><th>Gympic</th><th>Hashcount</th><th>Creation Date</th></thead><tbody>";
 		   for (var i in result)
 		   {
-		   output+="<tr><td>" + result[i].name + "</td><td>" + result[i].hashvalue + "</td><td><img src='" + result[i].filename + "' width=200></td><td><img src='" + result[i].gymimage + "' width=200></td><td>" + result[i].count + "</td><td>" + result[i].creation + "<br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=gym' target=_new>Delete</a> </td></tr>";
+		   output+="<tr><td>" + result[i].name + "</td><td>" + result[i].hashvalue + "</td><td><img src='" + result[i].filename + "' width=200></td><td><img src='" + result[i].gymimage + "' width=200></td><td>" + result[i].count + "</td><td>" + result[i].creation + "<br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=gym&redirect=gyms'>Delete</a> </td></tr>";
 		   }
 		   output+="</tbody></table>";
 
