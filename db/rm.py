@@ -26,6 +26,9 @@ class RmWrapper:
         self.timezone = timezone
         self.uniqueHash = uniqueHash
 
+    def auto_hatch_eggs(self):
+        log.warn('This is not implemented for RM yet')
+
     def dbTimeStringToUnixTimestamp(self, timestring):
         dt = datetime.datetime.strptime(timestring, '%Y-%m-%d %H:%M:%S')
         unixtime = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
