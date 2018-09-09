@@ -28,7 +28,7 @@ class MonocleWrapper:
         self.timezone = timezone
         self.uniqueHash = uniqueHash
 
-    def autoHatchEggs(self):
+    def auto_hatch_eggs(self):
         try:
             connection = mysql.connector.connect(host=self.host,
                                                  user=self.user, port=self.port, passwd=self.password,
@@ -40,7 +40,7 @@ class MonocleWrapper:
         mon_id = args.auto_hatch_mon_id
         cursor = connection.cursor()
 
-        query_for_count = "SELECT id from raids " \
+        query_for_count = "SELECT id, fort_id,time_battle,time_end from raids " \
                           "WHERE time_battle >= {0} AND time_end <= {0} AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
             .format(int(time.time()))
         log.debug(query_for_count)
@@ -49,30 +49,35 @@ class MonocleWrapper:
         rows_that_need_hatch_count = rows_that_need_hatch.rowcount
         log.debug("Rows that need updating: " + rows_that_need_hatch)
         if rows_that_need_hatch_count > 0:
-
-            query = "UPDATE raids SET pokemon_id = {0} WHERE id in (" \
-                .format(mon_id)
-
+            counter = 0
             for row in rows_that_need_hatch.fetchall():
-                query = query + row['id'] + ','
+                query = "UPDATE raids SET pokemon_id = {0} WHERE id = {1}" \
+                    .format(mon_id, row['id'])
 
-            log.debug(query)
-            cursor.execute(query)
-            affected_rows = cursor.rowcount
-            connection.commit()
+                log.debug(query)
+                cursor.execute(query)
+                affected_rows = cursor.rowcount
+                connection.commit()
+                if affected_rows == 1:
+                    counter = counter + 1
 
-            log.info("{0} gym(s) were updated as part of the regular level 5 egg hatching checks".format(affected_rows))
+                    log.debug('Sending auto hatched raid for raid id {0}'.format(row['id']))
+                    send_webhook(row['fort_id'], 'MON', row['time_battle'], row['time_end'], 5, mon_id)
 
-            if (affected_rows > 0):
-                print('do stuff')
+                elif affected_rows > 1:
+                    log.error('Something is wrong with the indexing on your table you raids on this id {0}'.format(row['id']))
+                else:
+                    log.error('The row we wanted to update did not get updated that had id {0}'.format(row['id']))
 
-                ## TODO TRIGGER THE WEBHOOK - THAT WILL BE FUN...I GUESS JUST EXTRACT ROWS, LOOP THROUGH EACH AND THEN SEND TO send_webhook()
+            if counter == rows_that_need_hatch_count:
+                log.info("{0} gym(s) were updated as part of the regular level 5 egg hatching checks".format(counter))
+            else:
+                log.warn('There was an issue and the number expected the hatch did not match the successful updates. '
+                         'Expected {0} Actual {1}'.format(rows_that_need_hatch_count, counter))
 
             cursor.close()
         else:
-            cursor.close()
             log.info('No Eggs due for hatching')
-
 
     def __checkLastUpdatedColumnExists(self):
         try:
@@ -277,7 +282,7 @@ class MonocleWrapper:
             return False
 
         log.error("__getFortIdWithExternalId: Trying to retrieve ID of '%s'" % str(externalId))
-        query = "SELECT id FROM `forts` WHERE external_id='%s'" % str(externalId)
+        query = "SELECT id FROM forts WHERE external_id='%s'" % str(externalId)
         cursor = connection.cursor()
         log.debug("__getFortIdWithExternalId: Executing query: %s " % str(query))
 
