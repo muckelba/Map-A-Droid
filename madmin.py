@@ -114,6 +114,7 @@ def delete_hash():
     nearGym = []
     hash = request.args.get('hash')
     type = request.args.get('type')
+    redi = request.args.get('redirect')
     if not hash or not type:
         return 'Missing Argument...'
         
@@ -121,20 +122,21 @@ def delete_hash():
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
         os.remove(file)
  
-    return 'Hash deleted ...'
+    return redirect('/' + str(redi), code=302)
 
 @app.route("/delete_file")
 def delete_file():
     nearGym = []
     hash = request.args.get('hash')
     type = request.args.get('type')
+    redi = request.args.get('redirect')
     if not hash or not type:
         return 'Missing Argument...'
         
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
         os.remove(file)
  
-    return 'File deleted ...'
+    return redirect('/' + str(redi), code=302)
 
 @app.route("/get_gyms")
 def get_gyms():
@@ -289,6 +291,6 @@ def creation_date(path_to_file):
             # so we'll settle for when its content was last modified.
             return stat.st_mtime
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, threaded=True)
 
     
