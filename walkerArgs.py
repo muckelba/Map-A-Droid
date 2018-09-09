@@ -202,12 +202,11 @@ def parseArgs():
                         help=('Enable status page database update using ' +
                               'STATUS_NAME as main worker name.'))
 
-    parser.add_argument('-ah', '--auto-hatch', action='store_true', default=False,
+    parser.add_argument('-ah', '--auto_hatch', action='store_true', default=False,
                         help='Active auto hatch of level 5 eggs')
 
-    parser.add_argument('-ahn', '--auto-hatch-number', action='store_true', default=False,
+    parser.add_argument('-ahn', '--auto_hatch_number', action='store_true', default=0,
                         help='Auto hatch of level 5 Pokemon ID')
-
 
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v',

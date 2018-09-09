@@ -38,6 +38,11 @@ class MonocleWrapper:
             return False
 
         mon_id = args.auto_hatch_mon_id
+
+        if mon_id == 0:
+            log.warn('You have enabled auto hatch but not the mon_id '
+                     'so it will mark them as zero so they will remain unhatched...')
+
         cursor = connection.cursor()
 
         query_for_count = "SELECT id, fort_id,time_battle,time_end from raids " \
