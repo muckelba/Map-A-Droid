@@ -37,7 +37,7 @@ class MonocleWrapper:
             log.error("Could not connect to the SQL database")
             return False
 
-        mon_id = args.auto_hatch_mon_id
+        mon_id = args.auto_hatch_number
 
         if mon_id == 0:
             log.warn('You have enabled auto hatch but not the mon_id '
@@ -46,18 +46,20 @@ class MonocleWrapper:
         cursor = connection.cursor()
 
         query_for_count = "SELECT id, fort_id,time_battle,time_end from raids " \
-                          "WHERE time_battle >= {0} AND time_end <= {0} AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
+                          "WHERE time_battle <= {0} AND time_end >= {0} AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
             .format(int(time.time()))
         log.debug(query_for_count)
 
-        rows_that_need_hatch = cursor.execute(query_for_count)
-        rows_that_need_hatch_count = rows_that_need_hatch.rowcount
-        log.debug("Rows that need updating: " + rows_that_need_hatch)
+        cursor.execute(query_for_count)
+        result = cursor.fetchall()
+        rows_that_need_hatch_count = cursor.rowcount
+        log.debug("Rows that need updating: {0}".format(rows_that_need_hatch_count))
         if rows_that_need_hatch_count > 0:
             counter = 0
-            for row in rows_that_need_hatch.fetchall():
+            for row in result:
+                log.debug(row)
                 query = "UPDATE raids SET pokemon_id = {0} WHERE id = {1}" \
-                    .format(mon_id, row['id'])
+                    .format(mon_id, row[0])
 
                 log.debug(query)
                 cursor.execute(query)
@@ -66,8 +68,8 @@ class MonocleWrapper:
                 if affected_rows == 1:
                     counter = counter + 1
 
-                    log.debug('Sending auto hatched raid for raid id {0}'.format(row['id']))
-                    send_webhook(row['fort_id'], 'MON', row['time_battle'], row['time_end'], 5, mon_id)
+                    log.debug('Sending auto hatched raid for raid id {0}'.format(row[0]))
+                    send_webhook(row[1], 'MON', row[2], row[3], 5, mon_id)
 
                 elif affected_rows > 1:
                     log.error('Something is wrong with the indexing on your table you raids on this id {0}'.format(row['id']))

@@ -170,9 +170,10 @@ def main():
 
 
 def level_5_auto_hatch():
-    if sleep is not True and args.auto_hatch:
-        DbWrapper.autoHatchEggs()
+    while sleep is not True and args.auto_hatch:
+        dbWrapper.autoHatchEggs()
         time.sleep(60)
+
 
 def deleteOldScreens(folderscreen, foldersuccess, minutes):
     if minutes == "0":
