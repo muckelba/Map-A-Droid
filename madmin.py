@@ -26,18 +26,18 @@ args = parseArgs()
 dbWrapper = DbWrapper(str(args.db_method), str(args.dbip), args.dbport, args.dbusername, args.dbpassword, args.dbname,
                       args.timezone)
 
-def activate_job():
-    def run_job():
-        try:
-            while True:
-                time.sleep(120)
-                log.debug('MADmin: Heartbeat...')
-        except KeyboardInterrupt:
-            pass
+
+def run_job():
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        exit(0)
             
 
-    thread = threading.Thread(target=run_job)
-    thread.start()
+    t_webApp = threading.Thread(name='Web App', target=run_job)
+    t_webApp.setDaemon(True)
+    t_webApp.start()
 
 @app.after_request
 def after_request(response):
@@ -67,6 +67,7 @@ def unknown():
 def submit_hash():
     hash = request.args.get('hash')
     id = request.args.get('id')
+    
     if dbWrapper.insertHash(hash, 'gym', id, '999'):
         
         for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
@@ -74,6 +75,19 @@ def submit_hash():
             os.remove(file)
             
         return redirect("/unknown", code=302)
+        
+@app.route("/modify_raid_gym")
+def modify_raid_gym():
+    hash = request.args.get('hash')
+    id = request.args.get('id')
+    mon = request.args.get('mon')
+    lvl = request.args.get('lvl')
+    
+    newJsonString = encodeHashJson(id, lvl, mon)
+    dbWrapper.deleteHashTable('"' + str(hash) + '"', 'raid', 'in', 'hash')
+    dbWrapper.insertHash(hash, 'raid', newJsonString, '999')
+    
+    return redirect("/raids", code=302)
 
 @app.route("/near_gym")
 def near_gym():
@@ -260,6 +274,15 @@ def match_unknows():
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     return render_template('match_unknown.html', hash = hash, lat = lat, lon = lon)
+    
+@app.route('/modify_raid', methods=['GET'])
+def modify_raid():
+    hash = request.args.get('hash')
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    lvl = request.args.get('lvl')
+    mon = request.args.get('mon')
+    return render_template('change_raid.html', hash = hash, lat = lat, lon = lon, lvl = lvl, mon = mon)
 
 @app.route('/asset/<path:path>', methods=['GET'])
 def pushAssets(path):
@@ -273,6 +296,10 @@ def decodeHashJson(hashJson):
     raidMon = data["mon"]
 
     return raidGym, raidLvl, raidMon
+    
+def encodeHashJson(gym, lvl, mon):
+    hashJson = json.dumps({'gym': gym, 'lvl': lvl, 'mon': mon, 'lvl': lvl}, separators=(',',':'))
+    return hashJson
     
 def creation_date(path_to_file):
     """
