@@ -38,23 +38,41 @@ class MonocleWrapper:
             return False
 
         mon_id = args.auto_hatch_mon_id
-
-        query = "UPDATE raids SET pokemon_id = {0} " \
-                "WHERE time_battle >= {1} AND time_end <= {1} AND level = 5 AND pokemon_id <> {0}" \
-            .format(mon_id, int(time.time()))
-
         cursor = connection.cursor()
-        log.debug(query)
-        cursor.execute(query)
-        affected_rows = cursor.rowcount
-        connection.commit()
-        cursor.close()
 
-        log.info("{0} gym(s) were updated as part of the regular level 5 egg hatching checks".format(affected_rows))
+        query_for_count = "SELECT id from raids " \
+                          "WHERE time_battle >= {0} AND time_end <= {0} AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
+            .format(int(time.time()))
+        log.debug(query_for_count)
 
-        if (affected_rows > 0):
-            print('do stuff')
-            ## TODO TRIGGER THE WEBHOOK - THAT WILL BE FUN...I GUESS JUST EXTRACT ROWS, LOOP THROUGH EACH AND THEN SEND TO send_webhook()
+        rows_that_need_hatch = cursor.execute(query_for_count)
+        rows_that_need_hatch_count = rows_that_need_hatch.rowcount
+        log.debug("Rows that need updating: " + rows_that_need_hatch)
+        if rows_that_need_hatch_count > 0:
+
+            query = "UPDATE raids SET pokemon_id = {0} WHERE id in (" \
+                .format(mon_id)
+
+            for row in rows_that_need_hatch.fetchall():
+                query = query + row['id'] + ','
+
+            log.debug(query)
+            cursor.execute(query)
+            affected_rows = cursor.rowcount
+            connection.commit()
+
+            log.info("{0} gym(s) were updated as part of the regular level 5 egg hatching checks".format(affected_rows))
+
+            if (affected_rows > 0):
+                print('do stuff')
+
+                ## TODO TRIGGER THE WEBHOOK - THAT WILL BE FUN...I GUESS JUST EXTRACT ROWS, LOOP THROUGH EACH AND THEN SEND TO send_webhook()
+
+            cursor.close()
+        else:
+            cursor.close()
+            log.info('No Eggs due for hatching')
+
 
     def __checkLastUpdatedColumnExists(self):
         try:
