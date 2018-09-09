@@ -197,12 +197,16 @@ def parseArgs():
                               " with the instance's status name. Read the"
                               ' python time module docs for details.'
                               ' Default: %%Y%%m%%d_%%H%%M_<SN>.log.'),
-                        default='%Y%m%d_%H%M_<SN>.log'),
+                        default='%Y%m%d_%H%M_<SN>.log')
     parser.add_argument('-sn', '--status-name', default=str(os.getpid()),
                         help=('Enable status page database update using ' +
                               'STATUS_NAME as main worker name.'))
 
+    parser.add_argument('-ah', '--auto-hatch', action='store_true', default=False,
+                        help='Active auto hatch of level 5 eggs')
 
+    parser.add_argument('-ahn', '--auto-hatch-number', action='store_true', default=False,
+                        help='Auto hatch of level 5 Pokemon ID')
 
 
     verbose = parser.add_mutually_exclusive_group()
