@@ -38,8 +38,8 @@ class DbWrapper:
     def insertHash(self, imghash, type, id, raidNo):
         return self.__dbWrapperUsed.insertHash(imghash, type, id, raidNo)
 
-    def deleteHashTable(self, ids, type, mode=' not in '):
-        return self.__dbWrapperUsed.deleteHashTable(ids, type, mode)
+    def deleteHashTable(self, ids, type, mode=' not in ', field = ' id '):
+        return self.__dbWrapperUsed.deleteHashTable(ids, type, mode, field)
 
     def submitRaid(self, gym, pkm, lvl, start, end, type, raidNo, captureTime, MonWithNoEgg=False):
         return self.__dbWrapperUsed.submitRaid(gym, pkm, lvl, start, end, type, raidNo, captureTime, MonWithNoEgg)

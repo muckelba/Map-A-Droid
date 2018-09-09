@@ -198,12 +198,12 @@ class MonocleWrapper:
             return None
         cursor = connection.cursor()
 
-        query = ('SELECT id, BIT_COUNT( '
+        query = ('SELECT id, hash, BIT_COUNT( '
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
-                                                       'type FROM trshash '
-                                                       'HAVING hamming_distance < 4 and type = \'' + str(type) + '\' '
-                                                                                                                 'ORDER BY hamming_distance ASC')
+                 'type, count FROM trshash '
+                 'HAVING hamming_distance < 4 and type = \'' + str(type) + '\' '
+                 'ORDER BY hamming_distance ASC')
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ' + query)
         cursor.execute(query)
@@ -218,11 +218,11 @@ class MonocleWrapper:
             for row in data:
                 log.debug(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ID: ' + str(row[0]))
-                return True, row[0]
+                return True, row[0], row[1], row[4]
         else:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
-            return False, None
+            return False, None, None, None
 
     def insertHash(self, imghash, type, id, raidNo):
         doubleCheck = self.checkForHash(imghash, type, raidNo)
@@ -252,7 +252,7 @@ class MonocleWrapper:
         connection.commit()
         return True
 
-    def deleteHashTable(self, ids, type, mode):
+    def deleteHashTable(self, ids, type, mode, field):
         log.debug('Deleting old Hashes of type %s' % type)
         log.debug('Valid ids: %s' % ids)
         try:
@@ -264,7 +264,7 @@ class MonocleWrapper:
             return False
         cursor = connection.cursor()
         query = (' DELETE FROM trshash ' +
-                 ' where id ' + mode + ' (' + ids + ') ' +
+                 ' where ' + field + ' ' + mode + ' (' + ids + ') ' +
                  ' and type like \'%' + type + '%\'')
         log.debug(query)
         cursor.execute(query)
@@ -574,7 +574,7 @@ class MonocleWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM forts ' +
-                 ' HAVING distance <= 200 ' +
+                 ' HAVING distance <= ' + str(args.gym_scan_distance) + ' ' +
                  ' ORDER BY distance')
 
         cursor.execute(query)
@@ -612,7 +612,7 @@ class MonocleWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM forts ' +
-                 ' HAVING distance <= 200 and id=\'' + str(gym) + '\'')
+                 ' HAVING distance <= ' + str(args.gym_scan_distance+5) + ' and id=\'' + str(gym) + '\'')
 
         cursor.execute(query)
         data = cursor.fetchall()

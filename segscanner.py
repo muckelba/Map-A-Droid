@@ -204,7 +204,7 @@ class Scanner:
         
         template = ("mon_img/dummy_nearby.jpg")
 
-        find_gym = mt.fort_image_matching(raidpic, template, True, 0.90, raidNo, hash,radius, x1, x2, y1, y2)
+        find_gym = mt.fort_image_matching(raidpic, template, True, 0.85, raidNo, hash, False, radius, x1, x2, y1, y2)
         
         if find_gym >= 0.90:
             return True
@@ -243,18 +243,13 @@ class Scanner:
         
         if self.checkDummy(raidpic, x1, x2, y1, y2, hash, raidNo, radius):
             log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found dummy gym pic')
-            return 'dummy'
+            return 'dummy', True
             
         if foundMonCrops:
             gymHash = None
         else:
             gymHash = self.imageHashExists(raidpic, True, 'gym', raidNo, x1, x2, y1, y2, radius)
-            if gymHash:
-                if not self.dbWrapper.checkGymsNearby(captureLat, captureLng, hash, raidNo, gymHash):
-                    self.dbWrapper.deleteHashTable('\'' + str(gymHash) + '\'', 'gym', 'in')
-                    gymHash = None
-
-
+            
         if gymHash is None:
                 
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: No Gym-Hash: found - searching')
@@ -265,7 +260,7 @@ class Scanner:
             for closegym in closestGymIds:
 
                 for file in glob.glob("gym_img/_" + str(closegym[0]) + "_.jpg"):
-                    find_gym = mt.fort_image_matching(raidpic, file, True, float(args.gym_detection_value), raidNo, hash, radius=radius, x1=x1, x2=x2, y1=y1, y2=y2)
+                    find_gym = mt.fort_image_matching(raidpic, file, True, float(args.gym_detection_value), raidNo, hash, checkX=True, radius=radius, x1=x1, x2=x2, y1=y1, y2=y2)
                     log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Compare Gym-ID - ' + str(closegym[0]) + ' - Match: ' + str(find_gym))
                     if foundgym is None or find_gym > foundgym[0]:
                         foundgym = find_gym, file
@@ -278,7 +273,7 @@ class Scanner:
         else:
             self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1, x2, y1, y2, radius)
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detected Gym-ID: ' + str(gymHash))
-            return gymHash
+            return gymHash, True
 
         if gymId:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found Gym - Gym-ID: '+ str(gymId))
@@ -287,10 +282,10 @@ class Scanner:
             else:
                 self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1, x2, y1, y2, radius)
 
-            return gymId
+            return gymId, foundMonCrops
         else:
             #we could not find the gym...
-            return None
+            return None, True
 
     def unknownfound(self, raidpic, type, zoom, raidNo, hash, captureTime, imageHash=0, lat=0, lng=0):
         
@@ -301,8 +296,12 @@ class Scanner:
         
         raidpic = cv2.imread(raidpic)
         if imageHash:
-            cv2.imwrite(os.path.join(self.www_hash, str(lat) + "_" + str(lng) + "_" + str(imageHash) +".jpg"), raidpic)
-            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'unknownfound: Write unknown hash file for www: ' + str(lat) + "_" + str(lng) + "_" + str(imageHash) +".jpg") 
+            existFile = os.path.join(self.www_hash, str(type) + "_*_" + str(imageHash) +".jpg")
+            if not glob.glob(existFile):
+                cv2.imwrite(os.path.join(self.www_hash, str(type) + "_" + str(lat) + "_" + str(lng) + "_" + str(imageHash) +".jpg"), raidpic)
+                log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'saveforweb: Write hash file for www: ' + str(type) + "_" + str(lat) + "_" + str(lng) + "_" + str(imageHash) +".jpg") 
+            else:
+                log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'saveforweb: Hash file for www already exists: ' + str(type) + "_" + str(lat) + "_" + str(lng) + "_" + str(imageHash) +".jpg") 
         else:
             cv2.imwrite(os.path.join(self.unknownPath, str(raidNo) + "_" + str(type) + "_" + str(lat) + "_" + str(lng) + "_" + str(time.time()) +  "_" + str(imageHash) +".jpg"), raidpic)
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'unknownfound: Write unknown file: ' +  str(type) + "_" + str(lat) + "_" + str(lng) + "_" + str(time.time()) +".jpg")
@@ -381,7 +380,7 @@ class Scanner:
             circles = np.round(circles[0, :]).astype("int")
             for (x, y, r) in circles:
                         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'cropImage: Detect crop coordinates x: ' + str(x) +' y: ' + str(y) +' with radius: ' + str(r))
-                        new_crop = output[y-r-1:y+r+1, x-r-1:x+r+1]
+                        new_crop = output[y-r:y+r, x-r:x+r]
                         return new_crop
         return False
 
@@ -406,6 +405,12 @@ class Scanner:
 
         raidhashPic = os.path.join(self.tempPath, str(hash) + "_raidhash" + str(raidNo) +".jpg")
         cv2.imwrite(raidhashPic, raidhash)
+        
+        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Generating Raidhash')
+        genRaidHash = self.getImageHash(raidhashPic, False, raidNo)
+        
+        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Generating Gymhash')
+        genGymHash = self.getImageHash(raidhashPic, True, raidNo, radius=radius)
 
         #get (raidstart, raidend, raidtimer) as (timestamp, timestamp, human-readable hatch)
         raidtimer = self.detectRaidTime(img, hash, raidNo, radius)
@@ -440,31 +445,28 @@ class Scanner:
             gym = raidHash_[0]
             lvl = raidHash_[1]
             mon = raidHash_[2]
-
-            if self.dbWrapper.checkGymsNearby(captureLat, captureLng, hash, raidNo, gym):    
-
-                if not mon:
-                    log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an egg - fast submit')
-                    log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found egg level %s starting at %s and ending at %s. GymID: %s' % (lvl, raidstart, raidend, gym))
-                    self.dbWrapper.submitRaid(str(gym), None, lvl, raidstart, raidend, 'EGG', raidNo, captureTime)
-                else:
-                    
-                    raidend = self.detectRaidEndtimer(img, hash, raidNo, radius)
-                    if raidend[1]:
-                        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an mon and endtime - fast submit')
-                        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Submitting mon. ID: %s, gymId: %s' % (str(mon), str(gym)))
-                        self.dbWrapper.submitRaid(str(gym), mon, lvl, None, raidend[2], 'MON', raidNo, captureTime)
-                    else:
-                        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an mon - fast submit')
-                        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Submitting mon. ID: %s, gymId: %s' % (str(mon), str(gym)))
-                        self.dbWrapper.submitRaid(str(gym), mon, lvl, None, None, 'MON', raidNo, captureTime)
-                os.remove(filenameOfCrop)
-                os.remove(raidhashPic)
-                log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Finished')
-                return True
-                
+    
+            if not mon:
+                log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an egg - fast submit')
+                log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found egg level %s starting at %s and ending at %s. GymID: %s' % (lvl, raidstart, raidend, gym))
+                self.dbWrapper.submitRaid(str(gym), None, lvl, raidstart, raidend, 'EGG', raidNo, captureTime)
             else:
-                self.dbWrapper.deleteHashTable('\'' + str(raidHash) + '\'', 'raid', 'in')
+                    
+                raidend = self.detectRaidEndtimer(img, hash, raidNo, radius)
+                if raidend[1]:
+                    log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an mon and endtime - fast submit')
+                    log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Submitting mon. ID: %s, gymId: %s' % (str(mon), str(gym)))
+                    self.dbWrapper.submitRaid(str(gym), mon, lvl, None, raidend[2], 'MON', raidNo, captureTime)
+                else:
+                    log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an mon - fast submit')
+                    log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Submitting mon. ID: %s, gymId: %s' % (str(mon), str(gym)))
+                    self.dbWrapper.submitRaid(str(gym), mon, lvl, None, None, 'MON', raidNo, captureTime)
+                    
+            self.imageHash(raidhashPic, raidHash, False, 'raid', raidNo)
+            os.remove(filenameOfCrop)
+            os.remove(raidhashPic)
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Finished')
+            return True
 
         raidlevel = self.detectLevel(img, hash, raidNo, radius) #we need the raid level to make the possible set of mons smaller
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Determined raidlevel to be %s' % (str(raidlevel)))
@@ -494,11 +496,13 @@ class Scanner:
                 os.remove(filenameOfCrop)
                 return True
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Scanning Gym')
-            gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius, monFound[0])
+            _gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius, monFound[0])
+            gymId = _gymId[0]
 
         else:
             #let's get the gym we're likely scanning the image of
-            gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius)
+            _gymId = self.detectGym(raidhashPic, hash, raidNo, captureLat, captureLng, radius)
+            gymId = _gymId[0]
             #gymId is either None for Gym not found or contains the gymId as String
             
         if gymId == 'dummy':
@@ -508,9 +512,9 @@ class Scanner:
         if gymId is None:
             #gym unknown...
             log.warning('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Could not determine gym, aborting analysis')
-            gymhash = self.getImageHash(raidhashPic, True, raidNo, x1=0.30, x2=0.62, y1=0.62, y2=1.23, radius=radius)
+            genGymHash = self.getImageHash(raidhashPic, True, raidNo, radius=radius)
             self.unknownfound(filenameOfCrop, 'gym', False, raidNo, hash, captureTime, False, captureLat, captureLng)
-            self.unknownfound(raidhashPic, 'gym_crop', False, raidNo, hash, False, gymhash, captureLat, captureLng)
+            self.unknownfound(raidhashPic, 'unkgym', False, raidNo, hash, False, genGymHash, captureLat, captureLng)
             os.remove(filenameOfCrop)
             os.remove(raidhashPic)
             log.debug("start_detect[crop %s]: finished" % str(raidNo))
@@ -542,10 +546,17 @@ class Scanner:
                 
             if submitStatus:
                 self.successfound(filenameOfCrop, 'MON', gymId, raidNo, raidlevel, captureTime, str(monFound[0]))
-
             raidHashJson = self.encodeHashJson(gymId, raidlevel, monFound[0], raidNo)
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Adding Raidhash to Database: ' + str(raidHashJson))
             self.imageHash(raidhashPic, raidHashJson, False, 'raid', raidNo)
+            
+        self.unknownfound(raidhashPic, 'raid', False, raidNo, hash, False, genRaidHash, '0', '0')
+        if not _gymId[1] or eggfound:
+            existHash = self.dbWrapper.checkForHash(str(genGymHash), 'gym', raidNo)
+            if existHash[0]:
+                self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, existHash[2], '0', '0')
+            else:
+                self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, genGymHash, '0', '0')
 
         os.remove(raidhashPic)
         os.remove(filenameOfCrop)
