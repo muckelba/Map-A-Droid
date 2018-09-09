@@ -34,10 +34,10 @@
 		   success: function(result)
 		   {
 
-		   var output="<table><thead><tr><th>Hash</th><th>Hashpic</th><th>Lat</th><th>Lot</th></thead><tbody>";
+		   var output="<table><thead><tr><th>Hash</th><th>Hashpic</th><th>Lat</th><th>Lon</th><th>Creation Date</th></thead><tbody>";
 		   for (var i in result)
 		   {
-		   output+="<tr><td>" + result[i].hashvalue + "<br><br><button onclick=askGymId(\'" + result[i].hashvalue + "\')>Submit Gym-ID</button></td><td><img src='../" + result[i].filename + "' width=200></td><td>" + result[i].lat + "</td><td>" + result[i].lon + "</td></tr>";
+		   output+="<tr><td>" + result[i].hashvalue + "<br><br><a href='/match_unknows?hash=" + result[i].hashvalue + "&lat=" + result[i].lat +"&lon=" + result[i].lon + "'>Match Gym</a><br><a href='/delete_file?hash=" + result[i].hashvalue + "&type=gym' target=_blank>Delete</a></td><td><img src='../" + result[i].filename + "' width=200></td><td>" + result[i].lat + "</td><td>" + result[i].lon + "</td><td>" + result[i].creation + "</td></tr>";
 		   }
 		   output+="</tbody></table>";
 
@@ -49,18 +49,6 @@
 		  });
 </script>
 		  
-		  <script>
-		  function askGymId(hash) {
-		      var txt;
-		      var id = prompt("Please enter the Gym-Id:", "");
-		      if (id == null || id == "") {
 
-		      } else {
-				  window.location.replace("/submit_hash?hash=" + hash + "&id=" + id)
-
-		      }
-
-		  }
-		  </script>
 </body>
 </html>

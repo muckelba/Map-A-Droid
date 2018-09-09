@@ -73,9 +73,9 @@ def parseArgs():
                         help='The max time to wait for a command to return. Int seconds.')
 
     # Device specifics
-    parser.add_argument('-sw', '--screen_width', type=int, required=True,
+    parser.add_argument('-sw', '--screen_width', type=int, required=False,
                         help='The mobile\'s screen width')
-    parser.add_argument('-sh', '--screen_height', type=int, required=True,
+    parser.add_argument('-sh', '--screen_height', type=int, required=False,
                         help='The mobile\'s screen height')
 
     # CSV for Coords
@@ -152,6 +152,10 @@ def parseArgs():
 
     parser.add_argument('-lc', '--last_scanned', action='store_true', default=False,
                         help='Submit last scanned location to RM DB (if supported). Default: False')
+                        
+    parser.add_argument('-gsd', '--gym_scan_distance', type=int, default=6,
+                        help='Search for nearby Gmy within this radius (in KM!!). '
+                        'In areas with many Gyms reduce this argument to 1-2 Default: 6')
 
     # Cleanup Hash Database
     parser.add_argument('-chd', '--clean_hash_database', action='store_true', default=False,

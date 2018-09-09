@@ -8,7 +8,7 @@ from PIL import Image
 
 log = logging.getLogger(__name__)
 
-def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, radius= None, x1=0.30, x2=0.62, y1=0.62, y2=1.23):
+def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, checkX=False, radius=None, x1=0.30, x2=0.62, y1=0.62, y2=1.23):
     #log.debug("fort_image_matching: Reading url_img_name '%s'" % str(url_img_name))
     url_img = cv2.imread(url_img_name,3)
     if (url_img is None):
@@ -81,8 +81,12 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
 
         if found is None or maxVal > found[0]:
             found = (maxVal, maxLoc, r)
+            
+    (maxVal, maxLoc, r) = found
+    (startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
+    (endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
 
-    if found is None or found[0] < value:
+    if found is None or found[0] < value or (checkX and startX > width_f/2):
         return 0.0
 
     return found[0]

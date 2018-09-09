@@ -523,7 +523,7 @@ class MonocleWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM forts ' +
-                 ' HAVING distance <= 6 ' +
+                 ' HAVING distance <= ' + str(args.gym_scan_distance) + ' ' +
                  ' ORDER BY distance')
 
         cursor.execute(query)
@@ -561,7 +561,7 @@ class MonocleWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM forts ' +
-                 ' HAVING distance <= 6 and id=\'' + str(gym) + '\'')
+                 ' HAVING distance <= ' + str(args.gym_scan_distance+5) + ' and id=\'' + str(gym) + '\'')
 
         cursor.execute(query)
         data = cursor.fetchall()

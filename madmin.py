@@ -5,7 +5,7 @@ import logging
 import time
 from flask import (Flask, abort, jsonify, render_template,
                    request, make_response,
-                   send_from_directory, send_file)
+                   send_from_directory, send_file, redirect)
 from walkerArgs import parseArgs
 from db.dbWrapper import DbWrapper
 import sys
@@ -73,18 +73,38 @@ def submit_hash():
             copyfile(file, 'www_hash/gym_0_0_' + str(hash) + '.jpg')
             os.remove(file)
             
-        return 'Hash added - the Gym should now be recognized.'
+        return redirect("/unknown", code=302)
 
 @app.route("/near_gym")
 def near_gym():
     nearGym = []
+    with open('gym_info.json') as f:
+        data = json.load(f)
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     if not lat or not lon:
         return 'Missing Argument...'
     closestGymIds = dbWrapper.getNearGyms(lat, lon, 123, 1)
     for closegym in closestGymIds:
-        ngjson = ({'id': str(closegym[0]), 'dist': str(closegym[1])})
+        
+        gymid = str(closegym[0])
+        dist = str(closegym[1])
+        gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
+        
+        name = 'unknown'
+        lat = '0'
+        lon = '0'
+        url = '0'
+        description = ''
+        
+        if str(gymid) in data:
+            name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
+            lat = data[str(gymid)]["latitude"]
+            lon = data[str(gymid)]["longitude"]
+            if data[str(gymid)]["description"]:
+                description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
+        
+        ngjson = ({'id': gymid, 'dist': dist, 'name': name, 'lat': lat, 'lon': lon, 'description': description, 'filename': gymImage})
         nearGym.append(ngjson)
  
     return jsonify(nearGym)
@@ -102,6 +122,19 @@ def delete_hash():
         os.remove(file)
  
     return 'Hash deleted ...'
+
+@app.route("/delete_file")
+def delete_file():
+    nearGym = []
+    hash = request.args.get('hash')
+    type = request.args.get('type')
+    if not hash or not type:
+        return 'Missing Argument...'
+        
+    for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
+        os.remove(file)
+ 
+    return 'File deleted ...'
 
 @app.route("/get_gyms")
 def get_gyms():
@@ -202,10 +235,11 @@ def get_unknows():
     unk = []
     for file in glob.glob("www_hash/unkgym_*.jpg"):
         unkfile = re.search('unkgym_(-?\d+\.\d+)_(-?\d+\.\d+)_((?s).*)\.jpg', file)
+        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
         lat = (unkfile.group(1))
         lon = (unkfile.group(2))
         hashvalue = (unkfile.group(3))
-        hashJson = ({'lat': lat, 'lon': lon,'hashvalue': hashvalue, 'filename': file})
+        hashJson = ({'lat': lat, 'lon': lon,'hashvalue': hashvalue, 'filename': file, 'creation': creationdate})
         unk.append(hashJson)
 
     return jsonify(unk)   
@@ -217,6 +251,13 @@ def pushGyms(path):
 @app.route('/www_hash/<path:path>', methods=['GET'])
 def pushHashes(path):
     return send_from_directory('www_hash', path)
+    
+@app.route('/match_unknows', methods=['GET'])
+def match_unknows():
+    hash = request.args.get('hash')
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    return render_template('match_unknown.html', hash = hash, lat = lat, lon = lon)
 
 @app.route('/asset/<path:path>', methods=['GET'])
 def pushAssets(path):
