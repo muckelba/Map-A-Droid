@@ -46,6 +46,8 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
         y2 = int(round(radius*2*0.03)+(radius*y2))
 
         crop = url_img[int(y1):int(y2),int(x1):int(x2)]
+        
+        height_f, width_f, channel_f = fort_img.shape
 
         npValue=0.5
 
