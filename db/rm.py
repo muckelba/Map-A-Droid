@@ -109,7 +109,7 @@ class RmWrapper:
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
                  'type, count FROM trshash '
-                 'HAVING hamming_distance < 4 and type = \'' + str(type) + '\' '
+                 'HAVING hamming_distance < 5 and type = \'' + str(type) + '\' '
                  'ORDER BY hamming_distance ASC')
         log.debug(query)
 
