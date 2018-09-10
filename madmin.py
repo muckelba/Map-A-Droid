@@ -89,6 +89,16 @@ def modify_raid_gym():
     
     return redirect("/raids", code=302)
 
+@app.route("/modify_gym_hash")
+def modify_gym_hash():
+    hash = request.args.get('hash')
+    id = request.args.get('id')
+    
+    dbWrapper.deleteHashTable('"' + str(hash) + '"', 'gym', 'in', 'hash')
+    dbWrapper.insertHash(hash, 'gym', id, '999')
+    
+    return redirect("/gyms", code=302)
+  
 @app.route("/near_gym")
 def near_gym():
     nearGym = []
@@ -284,6 +294,13 @@ def modify_raid():
     mon = request.args.get('mon')
     return render_template('change_raid.html', hash = hash, lat = lat, lon = lon, lvl = lvl, mon = mon)
 
+@app.route('/modify_gym', methods=['GET'])
+def modify_gym():
+    hash = request.args.get('hash')
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    return render_template('change_gym.html', hash = hash, lat = lat, lon = lon)
+  
 @app.route('/asset/<path:path>', methods=['GET'])
 def pushAssets(path):
     return send_from_directory(args.pogoasset, path)    
