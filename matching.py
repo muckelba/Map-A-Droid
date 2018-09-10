@@ -27,8 +27,8 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
         if width_f < 180:
             tempFile = str(hash) + "_resize_" + str(raidNo) +".jpg"
             img_temp = Image.open(fort_img_name)
-            wsize = int((float(img_temp.size[0]))*3)
-            hsize = int((float(img_temp.size[1]))*3)
+            wsize = int((float(img_temp.size[0]))*2)
+            hsize = int((float(img_temp.size[1]))*2)
             img_temp = img_temp.resize((wsize,hsize), Image.ANTIALIAS)
             img_temp.save(tempFile)
             fort_img = cv2.imread(tempFile,3)
