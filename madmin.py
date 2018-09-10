@@ -298,7 +298,7 @@ def decodeHashJson(hashJson):
     return raidGym, raidLvl, raidMon
     
 def encodeHashJson(gym, lvl, mon):
-    hashJson = json.dumps({'gym': gym, 'lvl': lvl, 'mon': mon, 'lvl': lvl}, separators=(',',':'))
+    hashJson = json.dumps({'gym': gym, 'lvl': lvl, 'mon': mon}, separators=(',',':'))
     return hashJson
     
 def creation_date(path_to_file):
