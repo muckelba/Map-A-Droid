@@ -243,7 +243,7 @@ class Scanner:
         
         if self.checkDummy(raidpic, x1, x2, y1, y2, hash, raidNo, radius):
             log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found dummy gym pic')
-            return 'dummy', True
+            return 'dummy'
             
         gymHash = self.imageHashExists(raidpic, True, 'gym', raidNo, x1, x2, y1, y2, radius)
             
