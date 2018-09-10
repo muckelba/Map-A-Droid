@@ -445,8 +445,17 @@ class Scanner:
             gym = raidHash_[0]
             lvl = raidHash_[1]
             mon = raidHash_[2]
-    
+
             if not mon:
+                lvl = self.detectLevel(img, hash, raidNo, radius) #redetect level
+                log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Determined raidlevel to be %s' % (str(lvl)))
+
+                if raidlevel is None:
+                    log.error('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Could not determine raidlevel. Filename of Crop: %s' %  (filenameOfCrop))
+                    os.remove(filenameOfCrop)
+                    os.remove(raidhashPic)
+                    return True
+                
                 log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an egg - fast submit')
                 log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found egg level %s starting at %s and ending at %s. GymID: %s' % (lvl, raidstart, raidend, gym))
                 self.dbWrapper.submitRaid(str(gym), None, lvl, raidstart, raidend, 'EGG', raidNo, captureTime)
