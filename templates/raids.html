@@ -33,6 +33,15 @@
 		   url: "/get_raids",
 		   success: function(result)
 		   {
+            result.sort(function (a, b) {
+                    if (a.creation > b.creation) {
+                        return -1;
+                       }
+                   if (a.creation < b.creation) {
+                         return 1;
+                     }
+                   return 0;
+            });
 		   console.log(result);
 		   var output="<table><thead><tr><th>Name</th><th>Hashpic</th><th>Gympic</th><th>Egg/Mon</th><th>Level</th><th>Creation Date</th></thead><tbody>";
 		   for (var i in result)

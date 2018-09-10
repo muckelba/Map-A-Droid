@@ -196,7 +196,7 @@ def get_raids():
     for file in glob.glob("www_hash/raid_*.jpg"):
         unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
-        
+        print str(hashvalue)
         raidid = dbWrapper.checkForHash(str(hashvalue), 'raid', 1)
         raidjson = raidid[1]
         count = raidid[3]
