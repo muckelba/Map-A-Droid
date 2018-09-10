@@ -213,55 +213,53 @@ def get_raids():
         unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
         
-        if not str(hashvalue) in hashdata:
-            print "File: " + str(file) + " not found in Database"
-            break
+        if str(hashvalue) in hashdata:
+            raidjson =  hashdata[str(hashvalue)]["id"]
+            count = hashdata[hashvalue]["count"]
+        
+            raidHash_ = decodeHashJson(raidjson)
+            gymid = raidHash_[0]
+            lvl = raidHash_[1]
+            mon = int(raidHash_[2])
+            mon = "%03d"%mon
+        
+            if mon == '000':
+                type = 'egg'
+                monPic = ''
+            else:
+                type = 'mon'
+                monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
+            
+            eggId = eggIdsByLevel[int(lvl) - 1]
+            if eggId == 1:
+                eggPic = '/asset/static_assets/png/ic_raid_egg_normal.png'
+            if eggId == 2:
+                eggPic = '/asset/static_assets/png/ic_raid_egg_rare.png'
+            if eggId == 3:
+                eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
 
-        raidjson =  hashdata[str(hashvalue)]["id"]
-        count = hashdata[hashvalue]["count"]
+            creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+
+            name = 'unknown'
+            lat = '0'
+            lon = '0'
+            url = '0'
+            description = ''
         
-        raidHash_ = decodeHashJson(raidjson)
-        gymid = raidHash_[0]
-        lvl = raidHash_[1]
-        mon = int(raidHash_[2])
-        mon = "%03d"%mon
-        
-        if mon == '000':
-            type = 'egg'
-            monPic = ''
+            gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
+
+            if str(gymid) in data:
+                name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
+                lat = data[str(gymid)]["latitude"]
+                lon = data[str(gymid)]["longitude"]
+                if data[str(gymid)]["description"]:
+                    description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
+
+            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic })
+            raids.append(raidJson)
         else:
-            type = 'mon'
-            monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
-            
-        eggId = eggIdsByLevel[int(lvl) - 1]
-        if eggId == 1:
-            eggPic = '/asset/static_assets/png/ic_raid_egg_normal.png'
-        if eggId == 2:
-            eggPic = '/asset/static_assets/png/ic_raid_egg_rare.png'
-        if eggId == 3:
-            eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
-            
-        
-
-        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-
-        name = 'unknown'
-        lat = '0'
-        lon = '0'
-        url = '0'
-        description = ''
-        
-        gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
-
-        if str(gymid) in data:
-            name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
-            lat = data[str(gymid)]["latitude"]
-            lon = data[str(gymid)]["longitude"]
-            if data[str(gymid)]["description"]:
-                description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
-
-        raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic })
-        raids.append(raidJson)
+            print "File: " + str(file) + " not found in Database"
+            continue
 
     return jsonify(raids) 
 
