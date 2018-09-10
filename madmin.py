@@ -160,7 +160,7 @@ def get_gyms():
     for file in glob.glob("www_hash/gym_*.jpg"):
         unkfile = re.search('gym_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
-        print str(hashvalue)
+        
         _gymid = dbWrapper.checkForHash(str(hashvalue), 'gym', 1)
         gymid = _gymid[1]
         count = _gymid[3]
@@ -196,7 +196,7 @@ def get_raids():
     for file in glob.glob("www_hash/raid_*.jpg"):
         unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
-        
+        print str(hashvalue)
         raidid = dbWrapper.checkForHash(str(hashvalue), 'raid', 1)
         raidjson = raidid[1]
         count = raidid[3]
