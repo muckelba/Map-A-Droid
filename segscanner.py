@@ -450,7 +450,7 @@ class Scanner:
                 lvl = self.detectLevel(img, hash, raidNo, radius) #redetect level
                 log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Determined raidlevel to be %s' % (str(lvl)))
 
-                if raidlevel is None:
+                if lvl is None:
                     log.error('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Could not determine raidlevel. Filename of Crop: %s' %  (filenameOfCrop))
                     os.remove(filenameOfCrop)
                     os.remove(raidhashPic)
