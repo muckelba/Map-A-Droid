@@ -117,7 +117,7 @@ class Scanner:
             if ':' in raidtimer:
                 now = datetime.datetime.now()
                 log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidEndtimer: found raidendtimer %s' % raidtimer)
-                endTime = self.getEndTime(raidtimer, hash)
+                endTime = self.getEndTime(raidtimer, raidNo)
                 if endTime:
                     log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidEndtimer: Endtime %s' % str(endTime))
                     #raidstart = getHatchTime(self, raidtimer) - self.timezone * (self.timezone*60*60)
@@ -204,7 +204,7 @@ class Scanner:
         
         template = ("mon_img/dummy_nearby.jpg")
 
-        find_gym = mt.fort_image_matching(raidpic, template, True, 0.85, raidNo, hash, False, radius, x1, x2, y1, y2)
+        find_gym = mt.fort_image_matching(raidpic, template, True, 0.85, raidNo, hash, True, radius, x1, x2, y1, y2)
         
         if find_gym >= 0.90:
             return True
@@ -273,11 +273,13 @@ class Scanner:
             return gymHash
 
         if gymId:
-            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found Gym - Gym-ID: '+ str(gymId))
-            self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1, x2, y1, y2, radius)
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detected Gym - Gym-ID: '+ str(gymId))
+            
             return gymId
         else:
             #we could not find the gym...
+            gymHash = self.getImageHash(raidpic, True, raidNo, x1=x1, x2=x2, y1=y1, y2=y2, radius=radius)
+            self.unknownfound(raidpic, 'unkgym', False, raidNo, hash, False, gymHash, captureLat, captureLng)
             return None
 
     def unknownfound(self, raidpic, type, zoom, raidNo, hash, captureTime, imageHash=0, lat=0, lng=0):
@@ -514,8 +516,6 @@ class Scanner:
             #gym unknown...
             log.warning('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Could not determine gym, aborting analysis')
             genGymHash = self.getImageHash(raidhashPic, True, raidNo, radius=radius)
-            self.unknownfound(filenameOfCrop, 'gym', False, raidNo, hash, captureTime, False, captureLat, captureLng)
-            self.unknownfound(raidhashPic, 'unkgym', False, raidNo, hash, False, genGymHash, captureLat, captureLng)
             os.remove(filenameOfCrop)
             os.remove(raidhashPic)
             log.debug("start_detect[crop %s]: finished" % str(raidNo))

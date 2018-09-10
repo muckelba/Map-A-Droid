@@ -167,13 +167,16 @@ def get_gyms():
     gyms = []
     with open('gym_info.json') as f:
         data = json.load(f)
+        
+    hashdata = json.loads(getAllHash('gym'))
+    print hashdata
+        
     for file in glob.glob("www_hash/gym_*.jpg"):
         unkfile = re.search('gym_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
         
-        _gymid = dbWrapper.checkForHash(str(hashvalue), 'gym', 1)
-        gymid = _gymid[1]
-        count = _gymid[3]
+        gymid =  hashdata[str(hashvalue)]["id"]
+        count = hashdata[hashvalue]["count"]
 
         creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -203,13 +206,15 @@ def get_raids():
     eggIdsByLevel = [1, 1, 2, 2, 3]
     with open('gym_info.json') as f:
         data = json.load(f)
+        
+    hashdata = json.loads(getAllHash('raid'))
+    
     for file in glob.glob("www_hash/raid_*.jpg"):
         unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
-        print str(hashvalue)
-        raidid = dbWrapper.checkForHash(str(hashvalue), 'raid', 1)
-        raidjson = raidid[1]
-        count = raidid[3]
+
+        raidjson =  hashdata[str(hashvalue)]["id"]
+        count = hashdata[hashvalue]["count"]
         
         raidHash_ = decodeHashJson(raidjson)
         gymid = raidHash_[0]
@@ -318,6 +323,15 @@ def encodeHashJson(gym, lvl, mon):
     hashJson = json.dumps({'gym': gym, 'lvl': lvl, 'mon': mon}, separators=(',',':'))
     return hashJson
     
+def getAllHash(type):
+   rv = dbWrapper.getAllHash(type)
+   hashRes = {}
+   for result in rv:
+       hashRes[result[1]]  = ({'id': str(result[0]), 'type': result[2], 'count': result[3]})
+   #data_json = json.dumps(hashRes, sort_keys=True, indent=4, separators=(',', ': '))
+   data_json = hashRes
+   return json.dumps(hashRes, indent=4, sort_keys=True)
+
 def creation_date(path_to_file):
     """
     Try to get the date that a file was created, falling back to when it was
