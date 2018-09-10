@@ -230,6 +230,26 @@ class MonocleWrapper:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
             return False, None, None, None
+            
+    def getAllHash(self, type):
+        try:
+            connection = mysql.connector.connect(host=self.host,
+                                                 user=self.user, port=self.port, passwd=self.password,
+                                                 db=self.database)
+        except:
+            log.error("Could not connect to the SQL database")
+            return None
+        cursor = connection.cursor()
+
+        query = ('SELECT id, hash, '
+                 'type, count FROM trshash '
+                 'HAVING type = \'' + str(type) + '\' ')
+        log.debug(query)
+
+        cursor.execute(query)
+        data = cursor.fetchall()
+        
+        return data
 
     def insertHash(self, imghash, type, id, raidNo):
         doubleCheck = self.checkForHash(imghash, type, raidNo)

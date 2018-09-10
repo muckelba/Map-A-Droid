@@ -89,6 +89,16 @@ def modify_raid_gym():
     
     return redirect("/raids", code=302)
 
+@app.route("/modify_gym_hash")
+def modify_gym_hash():
+    hash = request.args.get('hash')
+    id = request.args.get('id')
+    
+    dbWrapper.deleteHashTable('"' + str(hash) + '"', 'gym', 'in', 'hash')
+    dbWrapper.insertHash(hash, 'gym', id, '999')
+    
+    return redirect("/gyms", code=302)
+  
 @app.route("/near_gym")
 def near_gym():
     nearGym = []
@@ -157,13 +167,16 @@ def get_gyms():
     gyms = []
     with open('gym_info.json') as f:
         data = json.load(f)
+        
+    hashdata = json.loads(getAllHash('gym'))
+    print hashdata
+        
     for file in glob.glob("www_hash/gym_*.jpg"):
         unkfile = re.search('gym_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
         
-        _gymid = dbWrapper.checkForHash(str(hashvalue), 'gym', 1)
-        gymid = _gymid[1]
-        count = _gymid[3]
+        gymid =  hashdata[str(hashvalue)]["id"]
+        count = hashdata[hashvalue]["count"]
 
         creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -193,56 +206,60 @@ def get_raids():
     eggIdsByLevel = [1, 1, 2, 2, 3]
     with open('gym_info.json') as f:
         data = json.load(f)
+        
+    hashdata = json.loads(getAllHash('raid'))
+    
     for file in glob.glob("www_hash/raid_*.jpg"):
         unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
-        print str(hashvalue)
-        raidid = dbWrapper.checkForHash(str(hashvalue), 'raid', 1)
-        raidjson = raidid[1]
-        count = raidid[3]
         
-        raidHash_ = decodeHashJson(raidjson)
-        gymid = raidHash_[0]
-        lvl = raidHash_[1]
-        mon = int(raidHash_[2])
-        mon = "%03d"%mon
+        if str(hashvalue) in hashdata:
+            raidjson =  hashdata[str(hashvalue)]["id"]
+            count = hashdata[hashvalue]["count"]
         
-        if mon == '000':
-            type = 'egg'
-            monPic = ''
+            raidHash_ = decodeHashJson(raidjson)
+            gymid = raidHash_[0]
+            lvl = raidHash_[1]
+            mon = int(raidHash_[2])
+            mon = "%03d"%mon
+        
+            if mon == '000':
+                type = 'egg'
+                monPic = ''
+            else:
+                type = 'mon'
+                monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
+            
+            eggId = eggIdsByLevel[int(lvl) - 1]
+            if eggId == 1:
+                eggPic = '/asset/static_assets/png/ic_raid_egg_normal.png'
+            if eggId == 2:
+                eggPic = '/asset/static_assets/png/ic_raid_egg_rare.png'
+            if eggId == 3:
+                eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
+
+            creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+
+            name = 'unknown'
+            lat = '0'
+            lon = '0'
+            url = '0'
+            description = ''
+        
+            gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
+
+            if str(gymid) in data:
+                name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
+                lat = data[str(gymid)]["latitude"]
+                lon = data[str(gymid)]["longitude"]
+                if data[str(gymid)]["description"]:
+                    description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
+
+            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic })
+            raids.append(raidJson)
         else:
-            type = 'mon'
-            monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
-            
-        eggId = eggIdsByLevel[int(lvl) - 1]
-        if eggId == 1:
-            eggPic = '/asset/static_assets/png/ic_raid_egg_normal.png'
-        if eggId == 2:
-            eggPic = '/asset/static_assets/png/ic_raid_egg_rare.png'
-        if eggId == 3:
-            eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
-            
-        
-
-        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-
-        name = 'unknown'
-        lat = '0'
-        lon = '0'
-        url = '0'
-        description = ''
-        
-        gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
-
-        if str(gymid) in data:
-            name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
-            lat = data[str(gymid)]["latitude"]
-            lon = data[str(gymid)]["longitude"]
-            if data[str(gymid)]["description"]:
-                description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
-
-        raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic })
-        raids.append(raidJson)
+            print "File: " + str(file) + " not found in Database"
+            continue
 
     return jsonify(raids) 
 
@@ -284,6 +301,13 @@ def modify_raid():
     mon = request.args.get('mon')
     return render_template('change_raid.html', hash = hash, lat = lat, lon = lon, lvl = lvl, mon = mon)
 
+@app.route('/modify_gym', methods=['GET'])
+def modify_gym():
+    hash = request.args.get('hash')
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    return render_template('change_gym.html', hash = hash, lat = lat, lon = lon)
+  
 @app.route('/asset/<path:path>', methods=['GET'])
 def pushAssets(path):
     return send_from_directory(args.pogoasset, path)    
@@ -301,6 +325,15 @@ def encodeHashJson(gym, lvl, mon):
     hashJson = json.dumps({'gym': gym, 'lvl': lvl, 'mon': mon}, separators=(',',':'))
     return hashJson
     
+def getAllHash(type):
+   rv = dbWrapper.getAllHash(type)
+   hashRes = {}
+   for result in rv:
+       hashRes[result[1]]  = ({'id': str(result[0]), 'type': result[2], 'count': result[3]})
+   #data_json = json.dumps(hashRes, sort_keys=True, indent=4, separators=(',', ': '))
+   data_json = hashRes
+   return json.dumps(hashRes, indent=4, sort_keys=True)
+
 def creation_date(path_to_file):
     """
     Try to get the date that a file was created, falling back to when it was

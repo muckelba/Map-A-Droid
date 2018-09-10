@@ -34,6 +34,9 @@ class DbWrapper:
 
     def checkForHash(self, imghash, type, raidNo):
         return self.__dbWrapperUsed.checkForHash(imghash, type, raidNo)
+        
+    def getAllHash(self, type):
+        return self.__dbWrapperUsed.getAllHash(type)
 
     def insertHash(self, imghash, type, id, raidNo):
         return self.__dbWrapperUsed.insertHash(imghash, type, id, raidNo)
