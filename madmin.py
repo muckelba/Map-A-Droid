@@ -212,6 +212,10 @@ def get_raids():
     for file in glob.glob("www_hash/raid_*.jpg"):
         unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
+        
+        if not str(hashvalue) in hashdata:
+            print "File: " + str(file) + " not found in Database"
+            break
 
         raidjson =  hashdata[str(hashvalue)]["id"]
         count = hashdata[hashvalue]["count"]
