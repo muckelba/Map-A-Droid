@@ -72,7 +72,7 @@ def submit_hash():
         
         for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
             copyfile(os.path.join(self.www_hash,file, 'www_hash/gym_0_0_' + str(hash) + '.jpg'))
-            os.remove(os.path.join('www_hash',file))
+            os.remove(file)
             
         return redirect("/unknown", code=302)
         
@@ -144,7 +144,7 @@ def delete_hash():
         
     dbWrapper.deleteHashTable('"' + str(hash) + '"', type, 'in', 'hash')
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
-        os.remove(os.path.join('www_hash',file))
+        os.remove(file)
  
     return redirect('/' + str(redi), code=302)
 
@@ -158,7 +158,7 @@ def delete_file():
         return 'Missing Argument...'
         
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
-        os.remove(os.path.join('www_hash',file))
+        os.remove(file)
  
     return redirect('/' + str(redi), code=302)
 
