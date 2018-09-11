@@ -71,8 +71,8 @@ def submit_hash():
     if dbWrapper.insertHash(hash, 'gym', id, '999'):
         
         for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
-            copyfile(file, 'www_hash/gym_0_0_' + str(hash) + '.jpg')
-            os.remove(file)
+            copyfile(os.path.join(self.www_hash,file, 'www_hash/gym_0_0_' + str(hash) + '.jpg'))
+            os.remove(os.path.join('www_hash',file))
             
         return redirect("/unknown", code=302)
         
@@ -144,7 +144,7 @@ def delete_hash():
         
     dbWrapper.deleteHashTable('"' + str(hash) + '"', type, 'in', 'hash')
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
-        os.remove(file)
+        os.remove(os.path.join('www_hash',file))
  
     return redirect('/' + str(redi), code=302)
 
@@ -158,7 +158,7 @@ def delete_file():
         return 'Missing Argument...'
         
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
-        os.remove(file)
+        os.remove(os.path.join('www_hash',file))
  
     return redirect('/' + str(redi), code=302)
 
@@ -175,28 +175,34 @@ def get_gyms():
         unkfile = re.search('gym_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
         
-        gymid =  hashdata[str(hashvalue)]["id"]
-        count = hashdata[hashvalue]["count"]
-
-        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-
-        name = 'unknown'
-        lat = '0'
-        lon = '0'
-        url = '0'
-        description = ''
+        if str(hashvalue) in hashdata:
         
-        gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
+            gymid =  hashdata[str(hashvalue)]["id"]
+            count = hashdata[hashvalue]["count"]
 
-        if str(gymid) in data:
-            name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
-            lat = data[str(gymid)]["latitude"]
-            lon = data[str(gymid)]["longitude"]
-            if data[str(gymid)]["description"]:
-                description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
+            creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
 
-        gymJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate })
-        gyms.append(gymJson)
+            name = 'unknown'
+            lat = '0'
+            lon = '0'
+            url = '0'
+            description = ''
+        
+            gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
+
+            if str(gymid) in data:
+                name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
+                lat = data[str(gymid)]["latitude"]
+                lon = data[str(gymid)]["longitude"]
+                if data[str(gymid)]["description"]:
+                    description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
+
+            gymJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate })
+            gyms.append(gymJson)
+            
+        else:
+            print "File: " + str(file) + " not found in Database"
+            continue
 
     return jsonify(gyms) 
     
