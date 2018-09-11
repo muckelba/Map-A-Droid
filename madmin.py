@@ -71,7 +71,7 @@ def submit_hash():
     if dbWrapper.insertHash(hash, 'gym', id, '999'):
         
         for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
-            copyfile(os.path.join(self.www_hash,file, 'www_hash/gym_0_0_' + str(hash) + '.jpg'))
+            copyfile(file, 'www_hash/gym_0_0_' + str(hash) + '.jpg')
             os.remove(file)
             
         return redirect("/unknown", code=302)
