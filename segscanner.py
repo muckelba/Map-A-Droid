@@ -274,7 +274,8 @@ class Scanner:
 
         if gymId:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detected Gym - Gym-ID: '+ str(gymId))
-            
+            gymHash = self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1=x1, x2=x2, y1=y1, y2=y2, radius=radius)
+            self.unknownfound(raidpic, 'gym', False, raidNo, hash, False, gymHash, '0', '0')
             return gymId
         else:
             #we could not find the gym...
@@ -552,9 +553,6 @@ class Scanner:
             self.imageHash(raidhashPic, raidHashJson, False, 'raid', raidNo)
             
         self.unknownfound(raidhashPic, 'raid', False, raidNo, hash, False, genRaidHash, '0', '0')
-        
-        existHash = self.dbWrapper.checkForHash(str(genGymHash), 'gym', raidNo)
-        self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, existHash[2], '0', '0')
 
         os.remove(raidhashPic)
         os.remove(filenameOfCrop)
@@ -636,10 +634,15 @@ class Scanner:
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' +  'imageHash: ' + str(imageHash))
 
         os.remove(tempHash)
-
-        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHash: Adding Hash to Database')
-
-        self.dbWrapper.insertHash(str(imageHash), str(type), str(id), raidNo)
+        
+        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
+        if existHash[0]:
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHash: Hash already in Database: ' + str(existHash[2]) )
+            return str(existHash[2])
+        else:
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHash: Adding Hash to Database: '+ str(imageHash))
+            self.dbWrapper.insertHash(str(imageHash), str(type), str(id), raidNo)
+            return str(imageHash)
 
     def getImageHash(self, image, zoom, raidNo, x1=0.30, x2=0.62, y1=0.62, y2=1.23, radius=0, hashSize=8):
         image2 = cv2.imread(image,3)

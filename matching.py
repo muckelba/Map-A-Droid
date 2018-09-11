@@ -39,9 +39,7 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
             else:
                 fort_img = fort_img[int((height_f/2)-(height_f/2.5)):int((height_f/2)+(height_f/2.5)), int((width_f/2)-(width_f/5)):int((width_f/2)+(width_f/5))]
                 
-        
-        kernel = np.ones((5,5),np.float32)/25
-        fort_img = cv2.filter2D(fort_img,-1,kernel)        
+               
         x1 = int(round(radius*2*0.03)+(radius*x1))
         x2 = int(round(radius*2*0.03)+(radius*x2))
         y1 = int(round(radius*2*0.03)+(radius*y1))
@@ -51,8 +49,8 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
         
         height_f, width_f, channel_f = fort_img.shape
 
-        npValue= 2
-        npFrom = 1
+        npValue= 0.5
+        npFrom = 0.2
 
     else:
         tempFile = str(hash) + "_resize_" + str(raidNo) +".jpg"
