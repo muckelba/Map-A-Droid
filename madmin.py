@@ -212,6 +212,9 @@ def get_raids():
     with open('gym_info.json') as f:
         data = json.load(f)
         
+    with open('pokemon.json') as f:
+        mondata = json.load(f)
+        
     hashdata = json.loads(getAllHash('raid'))
     
     for file in glob.glob("www_hash/raid_*.jpg"):
@@ -219,6 +222,7 @@ def get_raids():
         hashvalue = (unkfile.group(3))
         
         if str(hashvalue) in hashdata:
+            monName = 'unknown'
             raidjson =  hashdata[str(hashvalue)]["id"]
             count = hashdata[hashvalue]["count"]
         
@@ -226,7 +230,9 @@ def get_raids():
             gymid = raidHash_[0]
             lvl = raidHash_[1]
             mon = int(raidHash_[2])
+            monid = int(raidHash_[2])
             mon = "%03d"%mon
+            
         
             if mon == '000':
                 type = 'egg'
@@ -234,6 +240,8 @@ def get_raids():
             else:
                 type = 'mon'
                 monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
+                if str(monid) in mondata:
+                    monName = mondata[str(monid)]["name"]
             
             eggId = eggIdsByLevel[int(lvl) - 1]
             if eggId == 1:
@@ -260,7 +268,7 @@ def get_raids():
                 if data[str(gymid)]["description"]:
                     description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
 
-            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic })
+            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic, 'monname': monName })
             raids.append(raidJson)
         else:
             print "File: " + str(file) + " not found in Database"
