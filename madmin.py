@@ -169,7 +169,6 @@ def get_gyms():
         data = json.load(f)
         
     hashdata = json.loads(getAllHash('gym'))
-    print hashdata
         
     for file in glob.glob("www_hash/gym_*.jpg"):
         unkfile = re.search('gym_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
