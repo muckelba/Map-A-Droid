@@ -67,7 +67,12 @@ class RmWrapper:
                 if affected_rows == 1:
                     counter = counter + 1
                     log.debug('Sending auto hatched raid for raid id {0}'.format(row[0]))
-                    send_webhook(row[0], 'MON', row[1], row[2], 5, mon_id)
+                    send_webhook(row[0],
+                                 'MON',
+                                 self.dbTimeStringToUnixTimestamp(row[1]),
+                                 self.dbTimeStringToUnixTimestamp(row[2]),
+                                 5,
+                                 mon_id)
                 elif affected_rows > 1:
                     log.error('Something is wrong with the indexing on your table you raids on this id {0}'
                               .format(row['id']))
