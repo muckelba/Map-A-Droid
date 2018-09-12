@@ -172,7 +172,10 @@ def main():
 def level_5_auto_hatch():
     while sleep is not True and args.auto_hatch:
         dbWrapper.autoHatchEggs()
+        log.debug("auto_hatch going to sleep for 60 seconds")
         time.sleep(60)
+        log.debug("Sleep Status: " + str(sleep))
+        log.debug("Auto Hatch Enabled: " + str(args.auto_hatch))
 
 
 def deleteOldScreens(folderscreen, foldersuccess, minutes):
@@ -246,7 +249,12 @@ def sleeptimer(sleeptime):
                 tmNow = datetime.datetime.strptime(datetime.datetime.now().strftime('%H:%M'), "%H:%M")
                 tmNowNextDay = tmNow + datetime.timedelta(hours=24)
                 log.debug('sleeptimer: Still sleeping, current time... %s' % str(tmNow))
-                if tmNow < tmFrom or tmNowNextDay >= tmTil:
+                if tmNow > tmTil:
+                    log.debug("Time now: %s" % tmNow)
+                    log.debug("Time Now Next Day: %s" % tmNowNextDay)
+                    log.debug("Time From: %s" % tmFrom)
+                    log.debug("Time Til: %s" % tmTil)
+
                     log.warning('sleeptimer: Wakeup - here we go ...')
                     # Turning screen on and starting app
                     if telnMore:
