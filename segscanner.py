@@ -206,7 +206,7 @@ class Scanner:
 
         find_gym = mt.fort_image_matching(raidpic, template, True, 0.85, raidNo, hash, True, radius, x1, x2, y1, y2)
         
-        if find_gym >= 0.90:
+        if find_gym >= 0.85:
             return True
         return False
 
@@ -240,14 +240,16 @@ class Scanner:
                 y2 = crop['Y2']
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Cropsizes: x1:%s, x2:%s, y1:%s, y2:%s' % (str(x1), str(x2), str(y1), str(y2)))
-        
-        if self.checkDummy(raidpic, x1, x2, y1, y2, hash, raidNo, radius):
-            log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found dummy gym pic')
-            return 'dummy'
             
         gymHash = self.imageHashExists(raidpic, True, 'gym', raidNo, x1, x2, y1, y2, radius)
             
         if gymHash is None:
+            
+            if self.checkDummy(raidpic, x1, x2, y1, y2, hash, raidNo, radius):
+                log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found dummy gym pic')
+                gymHash = self.getImageHash(raidpic, True, raidNo, x1=x1, x2=x2, y1=y1, y2=y2, radius=radius)
+                self.unknownfound(raidpic, 'unkgym', False, raidNo, hash, False, gymHash, captureLat, captureLng)
+                return 'dummy'
                 
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: No Gym-Hash: found - searching')
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Searching closest gyms')
@@ -274,7 +276,8 @@ class Scanner:
 
         if gymId:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detected Gym - Gym-ID: '+ str(gymId))
-            
+            gymHash = self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1=x1, x2=x2, y1=y1, y2=y2, radius=radius)
+            self.unknownfound(raidpic, 'gym', False, raidNo, hash, False, gymHash, '0', '0')
             return gymId
         else:
             #we could not find the gym...
@@ -369,6 +372,8 @@ class Scanner:
     def cropImage(self, image, raidNo, radius):
         gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         output = image.copy()
+        height, width, channel = output.shape
+        output = output[0:height*2/3,0:width]
         image_cols, image_rows, _ = image.shape
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT,2,image_cols,param1=100,param2=15,minRadius=radius,maxRadius=radius)
         if circles is not None:
@@ -403,9 +408,6 @@ class Scanner:
         
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Generating Raidhash')
         genRaidHash = self.getImageHash(raidhashPic, False, raidNo)
-        
-        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Generating Gymhash')
-        genGymHash = self.getImageHash(raidhashPic, True, raidNo, radius=radius)
 
         #get (raidstart, raidend, raidtimer) as (timestamp, timestamp, human-readable hatch)
         raidtimer = self.detectRaidTime(img, hash, raidNo, radius)
@@ -515,7 +517,6 @@ class Scanner:
         if gymId is None:
             #gym unknown...
             log.warning('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Could not determine gym, aborting analysis')
-            genGymHash = self.getImageHash(raidhashPic, True, raidNo, radius=radius)
             os.remove(filenameOfCrop)
             os.remove(raidhashPic)
             log.debug("start_detect[crop %s]: finished" % str(raidNo))
@@ -552,9 +553,6 @@ class Scanner:
             self.imageHash(raidhashPic, raidHashJson, False, 'raid', raidNo)
             
         self.unknownfound(raidhashPic, 'raid', False, raidNo, hash, False, genRaidHash, '0', '0')
-        
-        existHash = self.dbWrapper.checkForHash(str(genGymHash), 'gym', raidNo)
-        self.unknownfound(raidhashPic, 'gym', False, raidNo, hash, False, existHash[2], '0', '0')
 
         os.remove(raidhashPic)
         os.remove(filenameOfCrop)
@@ -636,10 +634,16 @@ class Scanner:
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' +  'imageHash: ' + str(imageHash))
 
         os.remove(tempHash)
-
-        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHash: Adding Hash to Database')
-
-        self.dbWrapper.insertHash(str(imageHash), str(type), str(id), raidNo)
+        
+        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
+        if existHash[0]:
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHash: Hash already in Database: ' + str(existHash[2]) )
+            self.dbWrapper.insertHash(str(existHash[2]), str(type), str(id), raidNo)
+            return str(existHash[2])
+        else:
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHash: Adding Hash to Database: '+ str(imageHash))
+            self.dbWrapper.insertHash(str(imageHash), str(type), str(id), raidNo)
+            return str(imageHash)
 
     def getImageHash(self, image, zoom, raidNo, x1=0.30, x2=0.62, y1=0.62, y2=1.23, radius=0, hashSize=8):
         image2 = cv2.imread(image,3)

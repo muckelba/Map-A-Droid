@@ -46,6 +46,9 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   return response
 
+@app.route('/screens', methods=['GET'])
+def screens():
+    return render_template('screens.html')
 
 @app.route('/', methods=['GET'])
 def root():
@@ -162,6 +165,7 @@ def delete_file():
  
     return redirect('/' + str(redi), code=302)
 
+
 @app.route("/get_gyms")
 def get_gyms():
     gyms = []
@@ -169,7 +173,6 @@ def get_gyms():
         data = json.load(f)
         
     hashdata = json.loads(getAllHash('gym'))
-    print hashdata
         
     for file in glob.glob("www_hash/gym_*.jpg"):
         unkfile = re.search('gym_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
@@ -204,14 +207,17 @@ def get_gyms():
             print "File: " + str(file) + " not found in Database"
             continue
 
-    return jsonify(gyms) 
-    
+    return jsonify(gyms)     
+
 @app.route("/get_raids")
 def get_raids():
     raids = []
     eggIdsByLevel = [1, 1, 2, 2, 3]
     with open('gym_info.json') as f:
         data = json.load(f)
+        
+    with open('pokemon.json') as f:
+        mondata = json.load(f)
         
     hashdata = json.loads(getAllHash('raid'))
     
@@ -220,6 +226,7 @@ def get_raids():
         hashvalue = (unkfile.group(3))
         
         if str(hashvalue) in hashdata:
+            monName = 'unknown'
             raidjson =  hashdata[str(hashvalue)]["id"]
             count = hashdata[hashvalue]["count"]
         
@@ -227,7 +234,9 @@ def get_raids():
             gymid = raidHash_[0]
             lvl = raidHash_[1]
             mon = int(raidHash_[2])
+            monid = int(raidHash_[2])
             mon = "%03d"%mon
+            
         
             if mon == '000':
                 type = 'egg'
@@ -235,6 +244,8 @@ def get_raids():
             else:
                 type = 'mon'
                 monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
+                if str(monid) in mondata:
+                    monName = mondata[str(monid)]["name"]
             
             eggId = eggIdsByLevel[int(lvl) - 1]
             if eggId == 1:
@@ -261,13 +272,26 @@ def get_raids():
                 if data[str(gymid)]["description"]:
                     description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
 
-            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic })
+            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic, 'monname': monName })
             raids.append(raidJson)
         else:
             print "File: " + str(file) + " not found in Database"
             continue
 
     return jsonify(raids) 
+
+@app.route("/get_screens")
+def get_screens():
+    screens = []
+    
+    for file in glob.glob("screenshots/raidscreen_*.png"):
+        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+
+        screenJson = ({'filename': file, 'creation': creationdate })
+        screens.append(screenJson)
+
+
+    return jsonify(screens) 
 
 @app.route("/get_unknows")
 def get_unknows():
@@ -290,6 +314,10 @@ def pushGyms(path):
 @app.route('/www_hash/<path:path>', methods=['GET'])
 def pushHashes(path):
     return send_from_directory('www_hash', path)
+    
+@app.route('/screenshots/<path:path>', methods=['GET'])
+def pushScreens(path):
+    return send_from_directory('screenshots', path)
     
 @app.route('/match_unknows', methods=['GET'])
 def match_unknows():

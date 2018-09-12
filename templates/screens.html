@@ -1,7 +1,7 @@
 <html
 <head>
  <meta charset="utf-8">
- <title>MADMIN - show Gym Matching</title>
+ <title>MADMIN - show success Screens</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -12,7 +12,7 @@
   <link rel="icon" href={{ url_for('static', filename='favicon.ico') }} type="image/x-icon">
  </head>
 <body>
-<center><h1>Check saved Raids</h1>
+<center><h1>Show Screens</h1>
 <h4><a href=/>Back to Menu</a></h4></center>
 <div id="show-data"></div>
 <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
@@ -21,6 +21,7 @@
 <script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+
 <script>
 
 
@@ -34,51 +35,37 @@
 
 		   $.ajax({
 		   type: "GET",
-		   url: "/get_raids",
+		   url: "/get_screens",
 		   success: function(result)
 		   {
             result.sort(function (a, b) {
                     if (a.creation > b.creation) {
                         return -1;
                        }
-                   else if (a.creation < b.creation) {
+                   if (a.creation < b.creation) {
                          return 1;
                      }
                    return 0;
             });
 		   console.log(result);
-		   var output="<table><thead><tr><th>Name</th><th>Hashpic</th><th>Gympic</th><th>Egg/Mon</th><th>Level</th><th>Creation Date</th></thead><tbody>";
+		   var output="<table><thead><tr><th>Image</th><th>Filename</th><th>Creation Date</th></thead><tbody>";
 		   for (var i in result)
 		   {
-			   if (result[i].type === "egg") {
-			   	monegg = "<img src='" + result[i].eggPic + "' width=100>"
-				lvl = 'Egg'
-				monName = ''
-			   } else {
-			   	monegg = "<img src='" + result[i].monPic + "' width=200>" 
-				lvl = 'Level: ' + result[i].level
-				monName = result[i].monname
-			   }
-		   output+="<tr><td>" + result[i].name + "<br><br>Hashvalue: " + result[i].hashvalue + "<br><br>Matchcount: " + result[i].count + "</td><td><img src='" + result[i].filename + "' width=200></td><td><img src='" + result[i].gymimage + "' width=200></td><td>" + monName + "<br><br>" + monegg + "</td><td>" + lvl + "</td><td>" + result[i].creation + "<br><br><a href='/modify_raid?hash=" + result[i].hashvalue + "&lat=" + result[i].lat +"&lon=" + result[i].lon + "&mon=" + result[i].mon + "&lvl=" + result[i].level + "'>Change Gym</a><br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=raid&redirect=raids'>Delete</a> </td></tr>";
+		   output+="<tr><td><img src='" + result[i].filename + "' width=400></td><td>" + result[i].filename + "</td><td>" + result[i].creation + "</td></tr>";
 		   }
 		   output+="</tbody></table>";
 
 		   displayResources.html(output);
 		   $("table").addClass("table");
-
-		   
 		   $('table').DataTable( {
-		           "order": [[ 5, "desc" ]],
+		           "order": [[ 1, "desc" ]],
 			       responsive: true,
 			       "autoWidth": true
 		       } );
-
-		   
 		   }
 		   });
 
 		  });
-		  </script>
-
+</script>
 </body>
 </html>
