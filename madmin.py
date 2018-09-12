@@ -46,6 +46,9 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   return response
 
+@app.route('/screens', methods=['GET'])
+def screens():
+    return render_template('screens.html')
 
 @app.route('/', methods=['GET'])
 def root():
@@ -162,6 +165,7 @@ def delete_file():
  
     return redirect('/' + str(redi), code=302)
 
+
 @app.route("/get_gyms")
 def get_gyms():
     gyms = []
@@ -203,8 +207,8 @@ def get_gyms():
             print "File: " + str(file) + " not found in Database"
             continue
 
-    return jsonify(gyms) 
-    
+    return jsonify(gyms)     
+
 @app.route("/get_raids")
 def get_raids():
     raids = []
@@ -276,6 +280,19 @@ def get_raids():
 
     return jsonify(raids) 
 
+@app.route("/get_screens")
+def get_screens():
+    screens = []
+    
+    for file in glob.glob("screenshots/raidscreen_*.png"):
+        creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+
+        screenJson = ({'filename': file, 'creation': creationdate })
+        screens.append(screenJson)
+
+
+    return jsonify(screens) 
+
 @app.route("/get_unknows")
 def get_unknows():
     unk = []
@@ -297,6 +314,10 @@ def pushGyms(path):
 @app.route('/www_hash/<path:path>', methods=['GET'])
 def pushHashes(path):
     return send_from_directory('www_hash', path)
+    
+@app.route('/screenshots/<path:path>', methods=['GET'])
+def pushScreens(path):
+    return send_from_directory('screenshots', path)
     
 @app.route('/match_unknows', methods=['GET'])
 def match_unknows():
