@@ -372,6 +372,8 @@ class Scanner:
     def cropImage(self, image, raidNo, radius):
         gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
         output = image.copy()
+        height, width, channel = output.shape
+        output = output[0:height*2/3,0:width]
         image_cols, image_rows, _ = image.shape
         circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT,2,image_cols,param1=100,param2=15,minRadius=radius,maxRadius=radius)
         if circles is not None:
