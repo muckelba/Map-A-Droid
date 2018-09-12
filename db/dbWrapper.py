@@ -56,8 +56,8 @@ class DbWrapper:
     def refreshTimes(self, gym, raidNo, captureTime):
         return self.__dbWrapperUsed.refreshTimes(gym, raidNo, captureTime)
 
-    def getNearGyms(self, lat, lng, hash, raidNo):
-        return self.__dbWrapperUsed.getNearGyms(lat, lng, hash, raidNo)
+    def getNearGyms(self, lat, lng, hash, raidNo, dist):
+        return self.__dbWrapperUsed.getNearGyms(lat, lng, hash, raidNo, dist)
         
     def checkGymsNearby(self, lat, lng, hash, raidNo, gymId):
         return self.__dbWrapperUsed.checkGymsNearby(lat, lng, hash, raidNo, gymId)

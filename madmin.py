@@ -111,7 +111,7 @@ def near_gym():
     lon = request.args.get('lon')
     if not lat or not lon:
         return 'Missing Argument...'
-    closestGymIds = dbWrapper.getNearGyms(lat, lon, 123, 1)
+    closestGymIds = dbWrapper.getNearGyms(lat, lon, 123, 1, args.gym_scan_distance+5)
     for closegym in closestGymIds:
         
         gymid = str(closegym[0])
@@ -131,7 +131,7 @@ def near_gym():
             if data[str(gymid)]["description"]:
                 description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
         
-        ngjson = ({'id': gymid, 'dist': dist, 'name': name, 'lat': lat, 'lon': lon, 'description': description, 'filename': gymImage})
+        ngjson = ({'id': gymid, 'dist': dist, 'name': name, 'lat': lat, 'lon': lon, 'description': description, 'filename': gymImage, 'dist': dist})
         nearGym.append(ngjson)
  
     return jsonify(nearGym)

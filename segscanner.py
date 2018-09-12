@@ -204,9 +204,9 @@ class Scanner:
         
         template = ("mon_img/dummy_nearby.jpg")
 
-        find_gym = mt.fort_image_matching(raidpic, template, True, 0.85, raidNo, hash, True, radius, x1, x2, y1, y2)
+        find_gym = mt.fort_image_matching(raidpic, template, True, 0.9, raidNo, hash, True, radius, x1, x2, y1, y2)
         
-        if find_gym >= 0.85:
+        if find_gym >= 0.9:
             return True
         return False
 
@@ -241,19 +241,20 @@ class Scanner:
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Cropsizes: x1:%s, x2:%s, y1:%s, y2:%s' % (str(x1), str(x2), str(y1), str(y2)))
             
+
+        gymHashvalue = self.getImageHash(raidpic, True, raidNo, 'gym', x1, x2, y1, y2, radius)
         gymHash = self.imageHashExists(raidpic, True, 'gym', raidNo, x1, x2, y1, y2, radius)
             
         if gymHash is None:
             
             if self.checkDummy(raidpic, x1, x2, y1, y2, hash, raidNo, radius):
                 log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Found dummy gym pic')
-                gymHash = self.getImageHash(raidpic, True, raidNo, x1=x1, x2=x2, y1=y1, y2=y2, radius=radius)
-                self.unknownfound(raidpic, 'unkgym', False, raidNo, hash, False, gymHash, captureLat, captureLng)
+                self.unknownfound(raidpic, 'unkgym', False, raidNo, hash, False, gymHashvalue, captureLat, captureLng)
                 return 'dummy'
                 
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: No Gym-Hash: found - searching')
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Searching closest gyms')
-            closestGymIds = self.dbWrapper.getNearGyms(captureLat, captureLng, hash, raidNo)
+            closestGymIds = self.dbWrapper.getNearGyms(captureLat, captureLng, hash, raidNo, str(args.gym_scan_distance))
 
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detecting Gym')
             for closegym in closestGymIds:
@@ -270,19 +271,18 @@ class Scanner:
                         gymId = gymSplit[2]
 
         else:
-            self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1, x2, y1, y2, radius)
+            self.imageHash(raidpic, gymHash, True, 'gym', raidNo, x1, x2, y1, y2, radius)
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detected Gym-ID: ' + str(gymHash))
             return gymHash
 
         if gymId:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectGym: Detected Gym - Gym-ID: '+ str(gymId))
             gymHash = self.imageHash(raidpic, gymId, True, 'gym', raidNo, x1=x1, x2=x2, y1=y1, y2=y2, radius=radius)
-            self.unknownfound(raidpic, 'gym', False, raidNo, hash, False, gymHash, '0', '0')
+            self.unknownfound(raidpic, 'gym', False, raidNo, hash, False, gymHashvalue, '0', '0')
             return gymId
         else:
             #we could not find the gym...
-            gymHash = self.getImageHash(raidpic, True, raidNo, x1=x1, x2=x2, y1=y1, y2=y2, radius=radius)
-            self.unknownfound(raidpic, 'unkgym', False, raidNo, hash, False, gymHash, captureLat, captureLng)
+            self.unknownfound(raidpic, 'unkgym', False, raidNo, hash, False, gymHashvalue, captureLat, captureLng)
             return None
 
     def unknownfound(self, raidpic, type, zoom, raidNo, hash, captureTime, imageHash=0, lat=0, lng=0):
@@ -407,7 +407,7 @@ class Scanner:
         cv2.imwrite(raidhashPic, raidhash)
         
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Generating Raidhash')
-        genRaidHash = self.getImageHash(raidhashPic, False, raidNo)
+        genRaidHash = self.getImageHash(raidhashPic, False, raidNo, 'raid')
 
         #get (raidstart, raidend, raidtimer) as (timestamp, timestamp, human-readable hatch)
         raidtimer = self.detectRaidTime(img, hash, raidNo, radius)
@@ -645,7 +645,7 @@ class Scanner:
             self.dbWrapper.insertHash(str(imageHash), str(type), str(id), raidNo)
             return str(imageHash)
 
-    def getImageHash(self, image, zoom, raidNo, x1=0.30, x2=0.62, y1=0.62, y2=1.23, radius=0, hashSize=8):
+    def getImageHash(self, image, zoom, raidNo, type, x1=0.30, x2=0.62, y1=0.62, y2=1.23, radius=0, hashSize=8):
         image2 = cv2.imread(image,3)
         image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
         if zoom:
@@ -661,12 +661,17 @@ class Scanner:
         cv2.imwrite(tempHash, crop)
         hashPic = Image.open(tempHash)
         imageHash = self.dhash(hashPic, raidNo)
-
-        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' +  'imageHash: ' + str(imageHash))
-
+        
+        log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' +  'getImageHash: ' + str(imageHash))
         os.remove(tempHash)
-
-        return imageHash
+        
+        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
+        if existHash[0]:
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'getImageHash: Hash already in Database: ' + str(existHash[2]) )
+            return str(existHash[2])
+        else:
+            log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'getImageHash: Hash not in Database: '+ str(imageHash))
+            return str(imageHash)
 
     def checkHourMin(self, hour_min):
         hour_min[0] = unicode(hour_min[0].replace('O','0').replace('o','0').replace('A','4'))

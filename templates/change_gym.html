@@ -39,10 +39,10 @@
 		   success: function(result)
 		   {
 		   console.log(result);
-		   var output="<table><thead><tr><th>Name</th><th>Hashpic</th><th>Match</th></thead><tbody>";
+		   var output="<table><thead><tr><th>Name</th><th>Hashpic</th><th>Distance</th><th>Match</th></thead><tbody>";
 		   for (var i in result)
 		   {
-		   output+="<tr><td>" + result[i].name + "<br><br>Gym-ID: " + result[i].id + "</td><td><img src='" + result[i].filename + "' width=200></td><td><a href='modify_gym_hash?hash={{ hash }}&id=" + result[i].id + "'>Match to this Gym</a> </td></tr>";
+		   output+="<tr><td>" + result[i].name + "<br><br>Gym-ID: " + result[i].id + "</td><td><img src='" + result[i].filename + "' width=200></td><td>" + result[i].dist + "</td><td><a href='modify_gym_hash?hash={{ hash }}&id=" + result[i].id + "'>Match to this Gym</a> </td></tr>";
 		   }
 		   output+="</tbody></table>";
 
@@ -50,6 +50,7 @@
 		   $("table").addClass("table");
 		   $('table').DataTable( {
 			       responsive: true,
+			       "order": [[ 2, "asc" ]],
 			       "autoWidth": true
 		       } );
 		   }

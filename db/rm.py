@@ -491,7 +491,7 @@ class RmWrapper:
         connection.close()
         return True
 
-    def getNearGyms(self, lat, lng, hash, raidNo):
+    def getNearGyms(self, lat, lng, hash, raidNo, dist=str(args.gym_scan_distance)):
         try:
             connection = mysql.connector.connect(host=self.host,
                                                  user=self.user, port=self.port, passwd=self.password,
@@ -515,7 +515,7 @@ class RmWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM gym ' +
-                 ' HAVING distance <= ' + str(args.gym_scan_distance) + ' ' +
+                 ' HAVING distance <= ' + str(dist) + ' ' +
                  ' ORDER BY distance')
 
         cursor.execute(query)
@@ -555,7 +555,7 @@ class RmWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM gym ' +
-                 ' HAVING distance <= ' + str(args.gym_scan_distance+5) + ' and gym_id=\'' + str(gym) + '\'')
+                 ' HAVING distance <= ' + str(args.gym_scan_distance) + ' and gym_id=\'' + str(gym) + '\'')
 
         cursor.execute(query)
         data = cursor.fetchall()

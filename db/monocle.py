@@ -522,7 +522,7 @@ class MonocleWrapper:
 
         return True
 
-    def getNearGyms(self, lat, lng, hash, raidNo):
+    def getNearGyms(self, lat, lng, hash, raidNo, dist=str(args.gym_scan_distance)):
         try:
             connection = mysql.connector.connect(host=self.host,
                                                  user=self.user, port=self.port, passwd=self.password,
@@ -543,7 +543,7 @@ class MonocleWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM forts ' +
-                 ' HAVING distance <= ' + str(args.gym_scan_distance) + ' ' +
+                 ' HAVING distance <= ' + str(dist) + ' ' +
                  ' ORDER BY distance')
 
         cursor.execute(query)
