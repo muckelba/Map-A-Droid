@@ -19,3 +19,5 @@ mon_img/_mon*
 *.csv
 .idea/
 www_hash/*
+updateGyms.txt
+venv/
