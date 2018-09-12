@@ -45,8 +45,10 @@ class RmWrapper:
         dbTimeToCheck = datetime.datetime.now() - datetime.timedelta(hours=self.timezone)
 
         query_for_count = "SELECT gym_id,start,end from raid " \
-                          "WHERE start <= {0} AND end >= {0} AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
+                          "WHERE start <=  \'{0}\' AND end >= \'{0}\' AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
             .format(str(dbTimeToCheck))
+
+
         log.debug(query_for_count)
         cursor.execute(query_for_count)
         result = cursor.fetchall()
@@ -57,7 +59,7 @@ class RmWrapper:
             counter = 0
             for row in result:
                 log.debug(row)
-                query = "UPDATE raid SET pokemon_id = {0} WHERE gym_id = {1}".format(mon_id, row[0])
+                query = "UPDATE raid SET pokemon_id = {0} WHERE gym_id = \'{1}\'".format(mon_id, row[0])
                 log.debug(query)
                 cursor.execute(query)
                 affected_rows = cursor.rowcount
