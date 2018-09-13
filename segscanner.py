@@ -83,7 +83,7 @@ class Scanner:
                     log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Hatchtime %s' % str(hatchTime))
                     #raidstart = getHatchTime(self, raidtimer) - self.timezone * (self.timezone*60*60)
                     raidstart = hatchTime #- (self.timezone * 60 * 60)
-                    raidend = hatchTime + 45 * 60 #- (self.timezone * 60 * 60)
+                    raidend = hatchTime + (int(args.raid_time) * 60) #- (self.timezone * 60 * 60)
                     #raidend = getHatchTime(self, raidtimer) + int(45*60) - (self.timezone*60*60)
                     log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Start: ' + str(raidstart) + ' End: ' + str(raidend))
                     return (raidFound, True, raidstart, raidend)

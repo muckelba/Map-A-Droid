@@ -192,6 +192,9 @@ def parseArgs():
     # MADmin
     parser.add_argument('-mmt', '--madmin_time', default='24',
                         help='MADmin clock format (12/24) (Default: 24)')
+                        
+    parser.add_argument('-rdt', '--raid_time', default='45', type=int,
+                        help='Raid Battle time in minutes. (Default: 45)')    
 
     # log settings
     parser.add_argument('--no-file-logs',
