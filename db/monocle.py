@@ -168,11 +168,11 @@ class MonocleWrapper:
             for row in data:
                 log.debug(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ID: ' + str(row[0]))
-                return True, row[0], row[1], row[4]
+                return True, row[0], row[1], row[4], row[5]
         else:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
-            return False, None, None, None
+            return False, None, None, None, None
             
     def getAllHash(self, type):
         try:
@@ -218,7 +218,7 @@ class MonocleWrapper:
                      % (str(imghash), str(type), str(id)))
         else:
             query = (' UPDATE trshash ' +
-                     ' set count=count+1 '
+                     ' set count=count+1, modify=NOW() '
                      ' where hash=\'%s\''
                      % (str(imghash)))
 
