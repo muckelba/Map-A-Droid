@@ -5,8 +5,11 @@ import imutils
 import logging
 import time
 from PIL import Image
+from walkerArgs import parseArgs
 
 log = logging.getLogger(__name__)
+
+args = parseArgs()
 
 def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, checkX=False, radius=None, x1=0.30, x2=0.62, y1=0.62, y2=1.23):
     #log.debug("fort_image_matching: Reading url_img_name '%s'" % str(url_img_name))
