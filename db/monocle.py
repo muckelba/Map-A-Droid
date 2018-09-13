@@ -129,13 +129,14 @@ class MonocleWrapper:
                  ' type VARCHAR(10) NOT NULL, ' +
                  ' id VARCHAR(255) NOT NULL, ' +
                  ' count INT(10) NOT NULL DEFAULT 1, ' +
+                 ' modify DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ' +
                  ' PRIMARY KEY (hashid))')
         log.debug(query)
         cursor.execute(query)
         connection.commit()
         return True
 
-    def checkForHash(self, imghash, type, raidNo):
+    def checkForHash(self, imghash, type, raidNo, distance):
         log.debug(
             '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: Checking for hash in db')
         try:
@@ -150,8 +151,8 @@ class MonocleWrapper:
         query = ('SELECT id, hash, BIT_COUNT( '
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
-                 'type, count FROM trshash '
-                 'HAVING hamming_distance <= 4 and type = \'' + str(type) + '\' '
+                 'type, count, modify FROM trshash '
+                 'HAVING hamming_distance < ' + str(distance) + '  and type = \'' + str(type) + '\' '
                  'ORDER BY hamming_distance ASC')
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ' + query)
@@ -184,7 +185,7 @@ class MonocleWrapper:
         cursor = connection.cursor()
 
         query = ('SELECT id, hash, '
-                 'type, count FROM trshash '
+                 'type, count, modify FROM trshash '
                  'HAVING type = \'' + str(type) + '\' ')
         log.debug(query)
 
@@ -194,7 +195,11 @@ class MonocleWrapper:
         return data
 
     def insertHash(self, imghash, type, id, raidNo):
-        doubleCheck = self.checkForHash(imghash, type, raidNo)
+        if type == 'raid':
+            distance = 3
+        else:
+            distance = 4
+        doubleCheck = self.checkForHash(imghash, type, raidNo, distance)
         if doubleCheck[0]:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(
                 self.uniqueHash) + ') ] ' + 'insertHash: Already in DB - update Counter')

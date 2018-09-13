@@ -29,8 +29,8 @@ class DbWrapper:
     def createHashDatabaseIfNotExists(self):
         return self.__dbWrapperUsed.createHashDatabaseIfNotExists()
 
-    def checkForHash(self, imghash, type, raidNo):
-        return self.__dbWrapperUsed.checkForHash(imghash, type, raidNo)
+    def checkForHash(self, imghash, type, raidNo, distance=4):
+        return self.__dbWrapperUsed.checkForHash(imghash, type, raidNo, distance)
         
     def getAllHash(self, type):
         return self.__dbWrapperUsed.getAllHash(type)

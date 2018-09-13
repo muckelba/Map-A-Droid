@@ -82,6 +82,7 @@ class RmWrapper:
                  ' type VARCHAR(10) NOT NULL, ' +
                  ' id VARCHAR(255) NOT NULL, ' +
                  ' count INT(10) NOT NULL DEFAULT 1, ' +
+                 ' modify DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ' +
                  ' PRIMARY KEY (hashid))')
         log.debug(query)
         cursor.execute(query)
@@ -90,7 +91,7 @@ class RmWrapper:
         connection.close()
         return True
 
-    def checkForHash(self, imghash, type, raidNo):
+    def checkForHash(self, imghash, type, raidNo, distance):
         log.debug(
             '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: Checking for hash in db')
         try:
@@ -105,8 +106,8 @@ class RmWrapper:
         query = ('SELECT id, hash, BIT_COUNT( '
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
-                 'type, count FROM trshash '
-                 'HAVING hamming_distance <= 4 and type = \'' + str(type) + '\' '
+                 'type, count, modify FROM trshash '
+                 'HAVING hamming_distance < ' + str(distance) + ' and type = \'' + str(type) + '\' '
                  'ORDER BY hamming_distance ASC')
         log.debug(query)
 
@@ -125,11 +126,11 @@ class RmWrapper:
             for row in data:
                 log.debug(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ID: ' + str(row[0]))
-                return True, row[0], row[1], row[4]
+                return True, row[0], row[1], row[4], row[5]
         else:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
-            return False, None, None, None
+            return False, None, None, None, None
             
     def getAllHash(self, type):
         try:
@@ -142,7 +143,7 @@ class RmWrapper:
         cursor = connection.cursor()
 
         query = ('SELECT id, hash, '
-                 'type, count FROM trshash '
+                 'type, count, modify FROM trshash '
                  'HAVING type = \'' + str(type) + '\' ')
         log.debug(query)
 
@@ -152,7 +153,11 @@ class RmWrapper:
         return data
 
     def insertHash(self, imghash, type, id, raidNo):
-        doubleCheck = self.checkForHash(imghash, type, raidNo)
+        if type == 'raid':
+            distance = 3
+        else:
+            distance = 4
+        doubleCheck = self.checkForHash(imghash, type, raidNo, distance)
         if doubleCheck[0]:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(
                 self.uniqueHash) + ') ] ' + 'insertHash: Already in DB - update Counter')
@@ -171,7 +176,7 @@ class RmWrapper:
                      % (str(imghash), str(type), str(id)))
         else:
             query = (' UPDATE trshash ' +
-                     ' set count=count+1 '
+                     ' set count=count+1, modify=NOW() '
                      ' where hash=\'%s\''
                      % (str(imghash)))
 
