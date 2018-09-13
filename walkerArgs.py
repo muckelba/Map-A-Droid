@@ -156,6 +156,12 @@ def parseArgs():
     parser.add_argument('-gsd', '--gym_scan_distance', type=int, default=6,
                         help='Search for nearby Gmy within this radius (in KM!!). '
                         'In areas with many Gyms reduce this argument to 1-2 Default: 6')
+                        
+    parser.add_argument('-npv', '--npValue', type=int, default=0.5,
+                        help='Matching zoom max value. (Based on resolution)')
+                        
+    parser.add_argument('-npf', '--npFrom', type=int, default=0.2,
+                        help='Matching zoom start value. (Based on resolution)')
 
     # Cleanup Hash Database
     parser.add_argument('-chd', '--clean_hash_database', action='store_true', default=False,

@@ -49,8 +49,8 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
         
         height_f, width_f, channel_f = fort_img.shape
 
-        npValue= 0.5
-        npFrom = 0.2
+        npValue= args.npValue
+        npFrom = args.npFrom
 
     else:
         tempFile = str(hash) + "_resize_" + str(raidNo) +".jpg"
