@@ -33,10 +33,10 @@ def updateEntry(gymName, lat, long, uri):
     # "https://lh4.ggpht.com/35FTQrG3D6Eyu4xY9tSYzY9867qe3bvVxAfmYXhYLrVQMEf3qOvm9B7OFnpxpiFlFA7-iJl1NaSji7MUsY_dAw"
     # lat = 50.627232 long = 8.631432
 
-    latLow = float_round(lat, 3, floor)
-    latHigh = float_round(lat, 3, ceil)
-    longLow = float_round(long, 3, floor)
-    longHigh = float_round(long, 3, ceil)
+    latLow = float_round(lat, 5, floor)
+    latHigh = float_round(lat, 5, ceil)
+    longLow = float_round(long, 5, floor)
+    longHigh = float_round(long, 5, ceil)
 
     print("Checking for gym in area of %s, %s, %s, %s" % (str(latLow), str(latHigh), str(longLow), str(longHigh)))
 
