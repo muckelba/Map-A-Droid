@@ -107,3 +107,8 @@ timezone:                    # Time difference from UTC+-0 (f.e +2 for Berlin/Ge
 
 #webhook                     # active support for webhook
 #webhook_url:                # URL endpoint for your webhook - beginning with http://
+
+# Auto Hatch
+######################
+# auto_hatch                 # Active auto hatch of level 5 eggs
+# auto_hatch_number          # Auto hatch of level 5 Pokemon ID

@@ -26,6 +26,71 @@ class RmWrapper:
         self.timezone = timezone
         self.uniqueHash = uniqueHash
 
+    def auto_hatch_eggs(self):
+        try:
+            connection = mysql.connector.connect(host=self.host,
+                                                 user=self.user, port=self.port, passwd=self.password,
+                                                 db=self.database)
+        except:
+            log.error("Could not connect to the SQL database")
+            return False
+
+        mon_id = args.auto_hatch_number
+
+        if mon_id == 0:
+            log.warn('You have enabled auto hatch but not the mon_id '
+                     'so it will mark them as zero so they will remain unhatched...')
+
+        cursor = connection.cursor()
+        dbTimeToCheck = datetime.datetime.now() - datetime.timedelta(hours=self.timezone)
+
+        query_for_count = "SELECT gym_id,start,end from raid " \
+                          "WHERE start <=  \'{0}\' AND end >= \'{0}\' AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
+            .format(str(dbTimeToCheck))
+
+
+        log.debug(query_for_count)
+        cursor.execute(query_for_count)
+        result = cursor.fetchall()
+        rows_that_need_hatch_count = cursor.rowcount
+        log.debug("Rows that need updating: {0}".format(rows_that_need_hatch_count))
+
+        if rows_that_need_hatch_count > 0:
+            counter = 0
+            for row in result:
+                log.debug(row)
+                query = "UPDATE raid SET pokemon_id = {0} WHERE gym_id = \'{1}\'".format(mon_id, row[0])
+                log.debug(query)
+                cursor.execute(query)
+                affected_rows = cursor.rowcount
+                connection.commit()
+                if affected_rows == 1:
+                    counter = counter + 1
+                    log.debug('Sending auto hatched raid for raid id {0}'.format(row[0]))
+                    send_webhook(row[0],
+                                 'MON',
+                                 self.dbTimeStringToUnixTimestamp(row[1]),
+                                 self.dbTimeStringToUnixTimestamp(row[2]),
+                                 5,
+                                 mon_id)
+                elif affected_rows > 1:
+                    log.error('Something is wrong with the indexing on your table you raids on this id {0}'
+                              .format(row['id']))
+                else:
+                    log.error('The row we wanted to update did not get updated that had id {0}'
+                              .format(row['id']))
+
+            if counter == rows_that_need_hatch_count:
+                log.info("{0} gym(s) were updated as part of the regular level 5 egg hatching checks"
+                         .format(counter))
+            else:
+                log.warn('There was an issue and the number expected the hatch did not match the successful updates. '
+                         'Expected {0} Actual {1}'.format(rows_that_need_hatch_count, counter))
+
+            cursor.close()
+        else:
+            log.info('No Eggs due for hatching')
+
     def dbTimeStringToUnixTimestamp(self, timestring):
         dt = datetime.datetime.strptime(timestring, '%Y-%m-%d %H:%M:%S')
         unixtime = (dt - datetime.datetime(1970, 1, 1)).total_seconds()
