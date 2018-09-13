@@ -185,6 +185,10 @@ def get_gyms():
             modify = hashdata[hashvalue]["modify"]
 
             creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+            
+            if args.madmin_time == "12":
+                creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+                modify = datetime.datetime.strptime(modify, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
 
             name = 'unknown'
             lat = '0'
@@ -258,6 +262,10 @@ def get_raids():
                 eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
 
             creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+            
+            if args.madmin_time == "12":
+                creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+                modify = datetime.datetime.strptime(modify, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
 
             name = 'unknown'
             lat = '0'
@@ -288,7 +296,10 @@ def get_screens():
     
     for file in glob.glob("screenshots/raidscreen_*.png"):
         creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-
+        
+        if args.madmin_time == "12":
+            creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+            
         screenJson = ({'filename': file, 'creation': creationdate })
         screens.append(screenJson)
 
@@ -304,6 +315,10 @@ def get_unknows():
         lat = (unkfile.group(1))
         lon = (unkfile.group(2))
         hashvalue = (unkfile.group(3))
+        
+        if args.madmin_time == "12":
+            creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+        
         hashJson = ({'lat': lat, 'lon': lon,'hashvalue': hashvalue, 'filename': file, 'creation': creationdate})
         unk.append(hashJson)
 

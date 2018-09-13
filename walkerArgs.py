@@ -188,6 +188,10 @@ def parseArgs():
                         help='Active webhook support')
     parser.add_argument('-whurl', '--webhook_url', default='',
                         help='URL to receive webhooks')
+                        
+    # MADmin
+    parser.add_argument('-mmt', '--madmin_time', default='24',
+                        help='MADmin clock format (12/24) (Default: 24)')
 
     # log settings
     parser.add_argument('--no-file-logs',
