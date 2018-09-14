@@ -5,8 +5,11 @@ import imutils
 import logging
 import time
 from PIL import Image
+from walkerArgs import parseArgs
 
 log = logging.getLogger(__name__)
+
+args = parseArgs()
 
 def mon_image_matching(url_img_name, fort_img_name, raidNo, hash):
 
@@ -23,8 +26,11 @@ def mon_image_matching(url_img_name, fort_img_name, raidNo, hash):
         return 0.0
     height, width,_ = url_img.shape
     height_f, width_f,_ = fort_img.shape
+    
+    fort_img = imutils.resize(fort_img, width = int(fort_img.shape[1] * 1))
 
-    resized = imutils.resize(url_img, width = int(url_img.shape[1] * 1))
+
+    resized = imutils.resize(url_img, width = int(url_img.shape[1] * 0.25))
     crop = cv2.Canny(resized, 100, 200)
         
     if crop.mean() == 255 or crop.mean() == 0:
@@ -34,9 +40,12 @@ def mon_image_matching(url_img_name, fort_img_name, raidNo, hash):
     
     fort_img = cv2.blur(fort_img,(3,3))
     fort_img = cv2.Canny(fort_img, 50, 100)
+    
+    npValue= args.npValue
+    npFrom = args.npFrom
 
     found = None
-    for scale in np.linspace(0.9,2, 10)[::-1]:
+    for scale in np.linspace(npFrom, npValue, 10)[::-1]:
 
         resized = imutils.resize(fort_img, width = int(fort_img.shape[1] * scale))
         r = fort_img.shape[1] / float(resized.shape[1])

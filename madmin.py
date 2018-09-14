@@ -91,6 +91,19 @@ def modify_raid_gym():
     dbWrapper.insertHash(hash, 'raid', newJsonString, '999')
     
     return redirect("/raids", code=302)
+    
+@app.route("/modify_raid_mon")
+def modify_raid_mon():
+    hash = request.args.get('hash')
+    id = request.args.get('gym')
+    mon = request.args.get('mon')
+    lvl = request.args.get('lvl')
+    
+    newJsonString = encodeHashJson(id, lvl, mon)
+    dbWrapper.deleteHashTable('"' + str(hash) + '"', 'raid', 'in', 'hash')
+    dbWrapper.insertHash(hash, 'raid', newJsonString, '999')
+    
+    return redirect("/raids", code=302)
 
 @app.route("/modify_gym_hash")
 def modify_gym_hash():
@@ -290,6 +303,30 @@ def get_raids():
 
     return jsonify(raids) 
 
+@app.route("/get_mons")
+def get_mons():
+    mons = []
+    
+        
+    with open('pokemon.json') as f:
+        mondata = json.load(f)
+    
+    for file in glob.glob(os.path.join(args.pogoasset, str('pokemon_icons/pokemon_icon_*_00.png'))):
+        unkfile = re.search('pokemon_icon_(-?\d+)', file)
+        mon = (unkfile.group(1))
+        monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
+        monName = 'unknown'
+        monid = int(mon)
+        
+        if str(monid) in mondata:
+            monName = mondata[str(monid)]["name"]
+        
+        monJson = ({'filename': monPic, 'mon': monid, 'name': monName })
+        mons.append(monJson)
+
+
+    return jsonify(mons) 
+
 @app.route("/get_screens")
 def get_screens():
     screens = []
@@ -358,6 +395,13 @@ def modify_gym():
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     return render_template('change_gym.html', hash = hash, lat = lat, lon = lon)
+    
+@app.route('/modify_mon', methods=['GET'])
+def modify_mon():
+    hash = request.args.get('hash')
+    gym = request.args.get('gym')
+    lvl = request.args.get('lvl')
+    return render_template('change_mon.html', hash = hash, gym = gym, lvl = lvl)
   
 @app.route('/asset/<path:path>', methods=['GET'])
 def pushAssets(path):
