@@ -362,6 +362,8 @@ def getToRaidscreen(maxAttempts, again=False):
     pogoTopmost = telnMore.isPogoTopmost()
     if not pogoTopmost:
         return False
+
+    checkPogoFreeze()
     log.info("getToRaidscreen: Attempting to retrieve screenshot before checking windows")
     # check if last screenshot is way too old to be of use...
     # log.fatal(lastScreenshotTaken)
@@ -393,13 +395,19 @@ def getToRaidscreen(maxAttempts, again=False):
         log.error("getToRaidscreen: screenshot.png is not a file/corrupted")
         return False
     
-    if pogoWindowManager.isGpsSignalLost('screenshot.png', 123):
+    while pogoWindowManager.isGpsSignalLost('screenshot.png', 123):
+        time.sleep(1)
+        if screenWrapper.getScreenshot('screenshot.png'):
+            lastScreenshotTaken = time.time()
         log.warning("getToRaidscreen: GPS signal error")
         redErrorCount += 1
         if redErrorCount > 3:
             log.error("getToRaidscreen: Red error multiple times in a row, restarting")
+            redErrorCount = 0
             restartPogo()
-    
+            break
+    redErrorCount = 0
+
     while not pogoWindowManager.checkRaidscreen('screenshot.png', 123):
         if attempts > maxAttempts:
             # could not reach raidtab in given maxAttempts
@@ -436,6 +444,7 @@ def getToRaidscreen(maxAttempts, again=False):
             return False
 
         attempts += 1
+
     log.debug("getToRaidscreen: done")
     return True
 
@@ -463,6 +472,29 @@ def reopenRaidTab():
     time.sleep(1)
 
 
+def checkPogoFreeze():
+    global lastScreenHash
+    global lastScreenHashCount
+    global lastScreenshotTaken
+    if not screenWrapper.getScreenshot('screenshot.png'):
+        log.error("checkPogoFreeze: Failed retrieving screenshot")
+    else:
+        lastScreenshotTaken = time.time()
+    screenHash = getImageHash('screenshot.png')
+    log.debug("main: Old Hash: " + lastScreenHash)
+    log.debug("main: New Hash: " + screenHash)
+    if hamming_distance(str(lastScreenHash), str(screenHash)) < 7 and lastScreenHash != '0':
+        log.debug("main: New und old Screenshoot are the same - no processing")
+        lastScreenHashCount += 1
+        log.debug("main: Same Screen Count: " + str(lastScreenHashCount))
+        if lastScreenHashCount >= 75:
+            lastScreenHashCount = 0
+            restartPogo()
+    else:
+        lastScreenHash = screenHash
+        lastScreenHashCount = 0
+
+
 # supposed to be running mostly in the post walk/teleport delays...
 def checkSpeedWeatherWarningThread():
     global sleep
@@ -480,6 +512,8 @@ def checkSpeedWeatherWarningThread():
         if not telnMore.isPogoTopmost():
             log.warning("checkSpeedWeatherWarningThread: Starting Pogo")
             restartPogo()
+        checkPogoFreeze()
+
         reachedRaidscreen = getToRaidscreen(10, True)
         if reachedRaidscreen:
             log.debug("checkSpeedWeatherWarningThread: checkSpeedWeatherWarningThread: reached raidscreen...")
