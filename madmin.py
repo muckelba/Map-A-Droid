@@ -182,8 +182,13 @@ def get_gyms():
         
             gymid =  hashdata[str(hashvalue)]["id"]
             count = hashdata[hashvalue]["count"]
+            modify = hashdata[hashvalue]["modify"]
 
             creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+            
+            if args.madmin_time == "12":
+                creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+                modify = datetime.datetime.strptime(modify, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
 
             name = 'unknown'
             lat = '0'
@@ -200,7 +205,7 @@ def get_gyms():
                 if data[str(gymid)]["description"]:
                     description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
 
-            gymJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate })
+            gymJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'modify': modify })
             gyms.append(gymJson)
             
         else:
@@ -229,6 +234,7 @@ def get_raids():
             monName = 'unknown'
             raidjson =  hashdata[str(hashvalue)]["id"]
             count = hashdata[hashvalue]["count"]
+            modify = hashdata[hashvalue]["modify"]
         
             raidHash_ = decodeHashJson(raidjson)
             gymid = raidHash_[0]
@@ -256,6 +262,10 @@ def get_raids():
                 eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
 
             creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
+            
+            if args.madmin_time == "12":
+                creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+                modify = datetime.datetime.strptime(modify, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
 
             name = 'unknown'
             lat = '0'
@@ -272,7 +282,7 @@ def get_raids():
                 if data[str(gymid)]["description"]:
                     description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
 
-            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic, 'monname': monName })
+            raidJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'modify': modify,  'level': lvl, 'mon': mon, 'type': type, 'eggPic': eggPic, 'monPic': monPic, 'monname': monName })
             raids.append(raidJson)
         else:
             print "File: " + str(file) + " not found in Database"
@@ -286,7 +296,10 @@ def get_screens():
     
     for file in glob.glob("screenshots/raidscreen_*.png"):
         creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-
+        
+        if args.madmin_time == "12":
+            creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+            
         screenJson = ({'filename': file, 'creation': creationdate })
         screens.append(screenJson)
 
@@ -302,6 +315,10 @@ def get_unknows():
         lat = (unkfile.group(1))
         lon = (unkfile.group(2))
         hashvalue = (unkfile.group(3))
+        
+        if args.madmin_time == "12":
+            creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
+        
         hashJson = ({'lat': lat, 'lon': lon,'hashvalue': hashvalue, 'filename': file, 'creation': creationdate})
         unk.append(hashJson)
 
@@ -363,7 +380,7 @@ def getAllHash(type):
    rv = dbWrapper.getAllHash(type)
    hashRes = {}
    for result in rv:
-       hashRes[result[1]]  = ({'id': str(result[0]), 'type': result[2], 'count': result[3]})
+       hashRes[result[1]]  = ({'id': str(result[0]), 'type': result[2], 'count': result[3], 'modify': str(result[4])})
    #data_json = json.dumps(hashRes, sort_keys=True, indent=4, separators=(',', ': '))
    data_json = hashRes
    return json.dumps(hashRes, indent=4, sort_keys=True)

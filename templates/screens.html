@@ -58,9 +58,10 @@
 		   displayResources.html(output);
 		   $("table").addClass("table");
 		   $('table').DataTable( {
-		           "order": [[ 1, "desc" ]],
+		           "order": [[ 2, "desc" ]],
 			       responsive: true,
-			       "autoWidth": true
+			       "autoWidth": true,
+			       columnDefs: [{ targets: [2], type: 'date'}]
 		       } );
 		   }
 		   });

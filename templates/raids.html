@@ -41,25 +41,25 @@
                     if (a.creation > b.creation) {
                         return -1;
                        }
-                   if (a.creation < b.creation) {
+                   else if (a.creation < b.creation) {
                          return 1;
                      }
                    return 0;
             });
 		   console.log(result);
-		   var output="<table><thead><tr><th>Name</th><th>Hashpic</th><th>Gympic</th><th>Egg/Mon</th><th>Level</th><th>Creation Date</th></thead><tbody>";
+		   var output="<table><thead><tr><th>Name</th><th>Hashpic</th><th>Gympic</th><th>Egg/Mon</th><th>Level</th><th>Last Modify</th><th>Creation Date</th></thead><tbody>";
 		   for (var i in result)
 		   {
 			   if (result[i].type === "egg") {
-			   	monegg = "<img src='" + result[i].eggPic + "' width=100>"
+			   	monegg = "<img src='" + result[i].eggPic + "' width=50>"
 				lvl = 'Egg'
 				monName = ''
 			   } else {
-			   	monegg = "<img src='" + result[i].monPic + "' width=200>" 
+			   	monegg = "<img src='" + result[i].monPic + "' width=100>" 
 				lvl = 'Level: ' + result[i].level
 				monName = result[i].monname
 			   }
-		   output+="<tr><td>" + result[i].name + "<br><br>Hashvalue: " + result[i].hashvalue + "<br><br>Matchcount: " + result[i].count + "</td><td><img src='" + result[i].filename + "' width=200></td><td><img src='" + result[i].gymimage + "' width=200></td><td>" + monName + "<br><br>" + monegg + "</td><td>" + lvl + "</td><td>" + result[i].creation + "<br><br><a href='/modify_raid?hash=" + result[i].hashvalue + "&lat=" + result[i].lat +"&lon=" + result[i].lon + "&mon=" + result[i].mon + "&lvl=" + result[i].level + "'>Change Gym</a><br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=raid&redirect=raids'>Delete</a> </td></tr>";
+		   output+="<tr><td>" + result[i].name + "<br><br>Hashvalue: " + result[i].hashvalue + "<br><br>Matchcount: " + result[i].count + "</td><td><img src='" + result[i].filename + "' width=100></td><td><img src='" + result[i].gymimage + "' width=100></td><td>" + monName + "<br>" + monegg + "</td><td>" + lvl + "</td><td>" + result[i].modify + "</td><td>" + result[i].creation + "<br><br><a href='/modify_raid?hash=" + result[i].hashvalue + "&lat=" + result[i].lat +"&lon=" + result[i].lon + "&mon=" + result[i].mon + "&lvl=" + result[i].level + "'>Change Gym</a><br><br><a href='/delete_hash?hash=" + result[i].hashvalue + "&type=raid&redirect=raids'>Delete</a> </td></tr>";
 		   }
 		   output+="</tbody></table>";
 
@@ -70,7 +70,9 @@
 		   $('table').DataTable( {
 		           "order": [[ 5, "desc" ]],
 			       responsive: true,
-			       "autoWidth": true
+			       "autoWidth": true,
+			       columnDefs: [{ targets: [5, 6], type: 'date'}]
+			   
 		       } );
 
 		   

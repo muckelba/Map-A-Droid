@@ -155,12 +155,28 @@ def main():
 
     if args.sleeptimer:
         log.info('Starting Sleeptimer....')
-        t_sleeptimer = Thread(name='sleeptimer', target=sleeptimer(args.sleepinterval))
+        t_sleeptimer = Thread(name='sleeptimer',
+                              target=sleeptimer)
         t_sleeptimer.daemon = True
         t_sleeptimer.start()
 
+    if args.auto_hatch:
+        log.info('Starting Auto Hatch....')
+        t_auto_hatch = Thread(name='level_5_auto_hatch', target=level_5_auto_hatch)
+        t_auto_hatch.daemon = True
+        t_auto_hatch.start()
+
     while True:
         time.sleep(10)
+
+
+def level_5_auto_hatch():
+    while sleep is not True and args.auto_hatch:
+        dbWrapper.autoHatchEggs()
+        log.debug("auto_hatch going to sleep for 60 seconds")
+        time.sleep(60)
+        log.debug("Sleep Status: " + str(sleep))
+        log.debug("Auto Hatch Enabled: " + str(args.auto_hatch))
 
 
 def deleteOldScreens(folderscreen, foldersuccess, minutes):
@@ -202,7 +218,8 @@ def deleteOldScreens(folderscreen, foldersuccess, minutes):
         time.sleep(3600)
 
 
-def sleeptimer(sleeptime):
+def sleeptimer():
+    sleeptime = args.sleepinterval
     global sleep
     global telnMore
     tmFrom = datetime.datetime.strptime(sleeptime[0], "%H:%M")
@@ -234,7 +251,12 @@ def sleeptimer(sleeptime):
                 tmNow = datetime.datetime.strptime(datetime.datetime.now().strftime('%H:%M'), "%H:%M")
                 tmNowNextDay = tmNow + datetime.timedelta(hours=24)
                 log.debug('sleeptimer: Still sleeping, current time... %s' % str(tmNow))
-                if tmNow < tmFrom or tmNowNextDay >= tmTil:
+                if tmNow > tmTil:
+                    log.debug("Time now: %s" % tmNow)
+                    log.debug("Time Now Next Day: %s" % tmNowNextDay)
+                    log.debug("Time From: %s" % tmFrom)
+                    log.debug("Time Til: %s" % tmTil)
+
                     log.warning('sleeptimer: Wakeup - here we go ...')
                     # Turning screen on and starting app
                     if telnMore:
@@ -390,7 +412,7 @@ def getToRaidscreen(maxAttempts, again=False):
             lastScreenshotTaken = time.time()
 
     attempts = 0
-    
+
     if os.path.isdir('screenshot.png'):
         log.error("getToRaidscreen: screenshot.png is not a file/corrupted")
         return False
@@ -423,7 +445,7 @@ def getToRaidscreen(maxAttempts, again=False):
         if not found and pogoWindowManager.checkCloseExceptNearbyButton('screenshot.png', 123):
             log.info("getToRaidscreen: Found (X) button (except nearby)")
             found = True
-        
+
         if not found and pogoWindowManager.lookForButton('screenshot.png', 1.05, 2.20):
             log.info("getToRaidscreen: Found button (big)")
             found = True
@@ -467,7 +489,7 @@ def reopenRaidTab():
     if not screenWrapper.getScreenshot('screenshot.png'):
         log.error("reopenRaidTab: Failed retrieving screenshot before checking for closebutton")
         return
-    pogoWindowManager.checkCloseExceptNearbyButton('screenshot.png', '123','True')
+    pogoWindowManager.checkCloseExceptNearbyButton('screenshot.png', '123', 'True')
     getToRaidscreen(3)
     time.sleep(1)
 
@@ -487,7 +509,7 @@ def checkPogoFreeze():
         log.debug("main: New und old Screenshoot are the same - no processing")
         lastScreenHashCount += 1
         log.debug("main: Same Screen Count: " + str(lastScreenHashCount))
-        if lastScreenHashCount >= 75:
+        if lastScreenHashCount >= 100:
             lastScreenHashCount = 0
             restartPogo()
     else:
@@ -610,7 +632,7 @@ def main_thread():
             lastLng = curLng
             egghatchLocation = False
             log.debug("main: Checking for raidqueue priority. Current time: %s, Current queue: %s" % (
-            	str(time.time()), str(nextRaidQueue)))
+                str(time.time()), str(nextRaidQueue)))
             # determine whether we move to the next gym or to the top of our priority queue
             if not lastRoundEggHatch and len(nextRaidQueue) > 0 and nextRaidQueue[0][0] < time.time():
                 # the topmost item in the queue lays in the past...
@@ -682,7 +704,7 @@ def main_thread():
                 # reopen raidtab and take screenshot...
                 log.warning("main: Count present but no raid shown, reopening raidTab")
                 reopenRaidTab()
-                #tabOutAndInPogo()
+                # tabOutAndInPogo()
                 screenWrapper.getScreenshot('screenshot.png')
                 countOfRaids = pogoWindowManager.readRaidCircles('screenshot.png', 123)
             #    elif countOfRaids == 0:

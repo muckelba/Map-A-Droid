@@ -1,11 +1,5 @@
-import sys
-import requests
-import shutil
-import mysql
 import mysql.connector
 import os
-import time
-import logging
 from walkerArgs import parseArgs
 from math import ceil, floor
 import hashlib
@@ -20,7 +14,7 @@ args = parseArgs()
 
 try:
     connection = mysql.connector.connect(host=args.dbip, user=args.dbusername, passwd=args.dbpassword, db=args.dbname)
-except:
+except Exception:
     print("Could not connect to the DB")
     exit(0)
 
@@ -39,10 +33,10 @@ def updateEntry(gymName, lat, long, uri):
     # "https://lh4.ggpht.com/35FTQrG3D6Eyu4xY9tSYzY9867qe3bvVxAfmYXhYLrVQMEf3qOvm9B7OFnpxpiFlFA7-iJl1NaSji7MUsY_dAw"
     # lat = 50.627232 long = 8.631432
 
-    latLow = float_round(lat, 3, floor)
-    latHigh = float_round(lat, 3, ceil)
-    longLow = float_round(long, 3, floor)
-    longHigh = float_round(long, 3, ceil)
+    latLow = float_round(lat, 5, floor)
+    latHigh = float_round(lat, 5, ceil)
+    longLow = float_round(long, 5, floor)
+    longHigh = float_round(long, 5, ceil)
 
     print("Checking for gym in area of %s, %s, %s, %s" % (str(latLow), str(latHigh), str(longLow), str(longHigh)))
 
@@ -79,19 +73,20 @@ def updateEntry(gymName, lat, long, uri):
         resultLongitude = long
         print("Could not find gym, inserting gym with new ID %s" % resultGym_id)
 
-        queryInsertGym = "INSERT INTO gym (gym_id, latitude, longitude) VALUES (\"{}\", {}, {})".format(resultGym_id,
-                                                                                                        resultLatitude,
-                                                                                                        resultLongitude)
+        queryInsertGym = "INSERT INTO gym (gym_id, latitude, longitude, team_id, guard_pokemon_id, slots_available, enabled, total_cp," \
+            "is_in_battle, last_modified, last_scanned) VALUES (\"{}\", {}, {}, {}, {}, {}, {}, {}, {}, NOW(), NOW())".format(resultGym_id,
+                                                                                                                              resultLatitude,
+                                                                                                                              resultLongitude,
+                                                                                                                              0, 0, 0, 1, 0, 0)
         print("Using the following query: %s" % queryInsertGym)
         cursor = connection.cursor()
         cursor.execute(queryInsertGym)
         cursor.close()
 
     # the gym should now be in the DB, let's INSERT or UPDATE without a check
-    queryInsertUpdateGymDetail = "INSERT INTO gymdetails (gym_id, name, url) VALUES (\"{}\", \"{}\", \"{}\") " \
+    queryInsertUpdateGymDetail = "INSERT INTO gymdetails (gym_id, name, url, last_scanned) VALUES (\"{}\", \"{}\", \"{}\", NOW()) " \
                                  "ON DUPLICATE KEY UPDATE gym_id = \"{}\", name = \"{}\", url = \"{}\"".format(
-        resultGym_id, gymName, uri, resultGym_id, gymName, uri
-    )
+                                    resultGym_id, gymName, uri, resultGym_id, gymName, uri)
     print("Calling query: %s" % queryInsertUpdateGymDetail)
     cursorSec = connection.cursor()
     cursorSec.execute(queryInsertUpdateGymDetail)

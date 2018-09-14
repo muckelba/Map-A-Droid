@@ -83,7 +83,7 @@ class Scanner:
                     log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Hatchtime %s' % str(hatchTime))
                     #raidstart = getHatchTime(self, raidtimer) - self.timezone * (self.timezone*60*60)
                     raidstart = hatchTime #- (self.timezone * 60 * 60)
-                    raidend = hatchTime + 45 * 60 #- (self.timezone * 60 * 60)
+                    raidend = hatchTime + (int(args.raid_time) * 60) #- (self.timezone * 60 * 60)
                     #raidend = getHatchTime(self, raidtimer) + int(45*60) - (self.timezone*60*60)
                     log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Start: ' + str(raidstart) + ' End: ' + str(raidend))
                     return (raidFound, True, raidstart, raidend)
@@ -608,8 +608,13 @@ class Scanner:
         imageHash = self.dhash(hashPic, raidNo)
 
         os.remove(tempHash)
+        
+        if type == 'raid':
+            distance = 3
+        else:
+            distance = 4
 
-        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
+        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo, distance)
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHashExists: Hash found: %s' % existHash[1])
         return existHash[1]
@@ -635,7 +640,12 @@ class Scanner:
 
         os.remove(tempHash)
         
-        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
+        if type == 'raid':
+            distance = 3
+        else:
+            distance = 4
+        
+        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo, distance)
         if existHash[0]:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'imageHash: Hash already in Database: ' + str(existHash[2]) )
             self.dbWrapper.insertHash(str(existHash[2]), str(type), str(id), raidNo)
@@ -665,7 +675,12 @@ class Scanner:
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' +  'getImageHash: ' + str(imageHash))
         os.remove(tempHash)
         
-        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo)
+        if type == 'raid':
+            distance = 3
+        else:
+            distance = 4
+        
+        existHash = self.dbWrapper.checkForHash(str(imageHash), str(type), raidNo, distance)
         if existHash[0]:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'getImageHash: Hash already in Database: ' + str(existHash[2]) )
             return str(existHash[2])

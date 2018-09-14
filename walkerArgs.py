@@ -157,10 +157,10 @@ def parseArgs():
                         help='Search for nearby Gmy within this radius (in KM!!). '
                         'In areas with many Gyms reduce this argument to 1-2 Default: 6')
                         
-    parser.add_argument('-npv', '--npValue', type=int, default=0.5,
+    parser.add_argument('-npv', '--npValue', type=float, default=0.5,
                         help='Matching zoom max value. (Based on resolution)')
                         
-    parser.add_argument('-npf', '--npFrom', type=int, default=0.2,
+    parser.add_argument('-npf', '--npFrom', type=float, default=0.2,
                         help='Matching zoom start value. (Based on resolution)')
 
     # Cleanup Hash Database
@@ -188,6 +188,13 @@ def parseArgs():
                         help='Active webhook support')
     parser.add_argument('-whurl', '--webhook_url', default='',
                         help='URL to receive webhooks')
+                        
+    # MADmin
+    parser.add_argument('-mmt', '--madmin_time', default='24',
+                        help='MADmin clock format (12/24) (Default: 24)')
+                        
+    parser.add_argument('-rdt', '--raid_time', default='45', type=int,
+                        help='Raid Battle time in minutes. (Default: 45)')    
 
     # log settings
     parser.add_argument('--no-file-logs',
@@ -203,13 +210,16 @@ def parseArgs():
                               " with the instance's status name. Read the"
                               ' python time module docs for details.'
                               ' Default: %%Y%%m%%d_%%H%%M_<SN>.log.'),
-                        default='%Y%m%d_%H%M_<SN>.log'),
+                        default='%Y%m%d_%H%M_<SN>.log')
     parser.add_argument('-sn', '--status-name', default=str(os.getpid()),
                         help=('Enable status page database update using ' +
                               'STATUS_NAME as main worker name.'))
 
+    parser.add_argument('-ah', '--auto_hatch', action='store_true', default=False,
+                        help='Active auto hatch of level 5 eggs')
 
-
+    parser.add_argument('-ahn', '--auto_hatch_number', type=int, default=0,
+                        help='Auto hatch of level 5 Pokemon ID')
 
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v',

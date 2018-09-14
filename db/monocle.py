@@ -28,6 +28,64 @@ class MonocleWrapper:
         self.timezone = timezone
         self.uniqueHash = uniqueHash
 
+    def auto_hatch_eggs(self):
+        try:
+            connection = mysql.connector.connect(host=self.host,
+                                                 user=self.user, port=self.port, passwd=self.password,
+                                                 db=self.database)
+        except:
+            log.error("Could not connect to the SQL database")
+            return False
+
+        mon_id = args.auto_hatch_number
+
+        if mon_id == 0:
+            log.warn('You have enabled auto hatch but not the mon_id '
+                     'so it will mark them as zero so they will remain unhatched...')
+
+        cursor = connection.cursor()
+
+        query_for_count = "SELECT id, fort_id,time_battle,time_end from raids " \
+                          "WHERE time_battle <= {0} AND time_end >= {0} AND level = 5 AND IFNULL(pokemon_id,0) = 0" \
+            .format(int(time.time()))
+        log.debug(query_for_count)
+
+        cursor.execute(query_for_count)
+        result = cursor.fetchall()
+        rows_that_need_hatch_count = cursor.rowcount
+        log.debug("Rows that need updating: {0}".format(rows_that_need_hatch_count))
+        if rows_that_need_hatch_count > 0:
+            counter = 0
+            for row in result:
+                log.debug(row)
+                query = "UPDATE raids SET pokemon_id = {0} WHERE id = {1}" \
+                    .format(mon_id, row[0])
+
+                log.debug(query)
+                cursor.execute(query)
+                affected_rows = cursor.rowcount
+                connection.commit()
+                if affected_rows == 1:
+                    counter = counter + 1
+
+                    log.debug('Sending auto hatched raid for raid id {0}'.format(row[0]))
+                    send_webhook(row[1], 'MON', row[2], row[3], 5, mon_id)
+
+                elif affected_rows > 1:
+                    log.error('Something is wrong with the indexing on your table you raids on this id {0}'.format(row['id']))
+                else:
+                    log.error('The row we wanted to update did not get updated that had id {0}'.format(row['id']))
+
+            if counter == rows_that_need_hatch_count:
+                log.info("{0} gym(s) were updated as part of the regular level 5 egg hatching checks".format(counter))
+            else:
+                log.warn('There was an issue and the number expected the hatch did not match the successful updates. '
+                         'Expected {0} Actual {1}'.format(rows_that_need_hatch_count, counter))
+
+            cursor.close()
+        else:
+            log.info('No Eggs due for hatching')
+
     def __checkLastUpdatedColumnExists(self):
         try:
             connection = mysql.connector.connect(host=self.host,
@@ -129,13 +187,14 @@ class MonocleWrapper:
                  ' type VARCHAR(10) NOT NULL, ' +
                  ' id VARCHAR(255) NOT NULL, ' +
                  ' count INT(10) NOT NULL DEFAULT 1, ' +
+                 ' modify DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ' +
                  ' PRIMARY KEY (hashid))')
         log.debug(query)
         cursor.execute(query)
         connection.commit()
         return True
 
-    def checkForHash(self, imghash, type, raidNo):
+    def checkForHash(self, imghash, type, raidNo, distance):
         log.debug(
             '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: Checking for hash in db')
         try:
@@ -150,8 +209,8 @@ class MonocleWrapper:
         query = ('SELECT id, hash, BIT_COUNT( '
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
-                 'type, count FROM trshash '
-                 'HAVING hamming_distance <= 4 and type = \'' + str(type) + '\' '
+                 'type, count, modify FROM trshash '
+                 'HAVING hamming_distance < ' + str(distance) + '  and type = \'' + str(type) + '\' '
                  'ORDER BY hamming_distance ASC')
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ' + query)
@@ -167,11 +226,11 @@ class MonocleWrapper:
             for row in data:
                 log.debug(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ID: ' + str(row[0]))
-                return True, row[0], row[1], row[4]
+                return True, row[0], row[1], row[4], row[5]
         else:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
-            return False, None, None, None
+            return False, None, None, None, None
             
     def getAllHash(self, type):
         try:
@@ -184,7 +243,7 @@ class MonocleWrapper:
         cursor = connection.cursor()
 
         query = ('SELECT id, hash, '
-                 'type, count FROM trshash '
+                 'type, count, modify FROM trshash '
                  'HAVING type = \'' + str(type) + '\' ')
         log.debug(query)
 
@@ -194,7 +253,11 @@ class MonocleWrapper:
         return data
 
     def insertHash(self, imghash, type, id, raidNo):
-        doubleCheck = self.checkForHash(imghash, type, raidNo)
+        if type == 'raid':
+            distance = 3
+        else:
+            distance = 4
+        doubleCheck = self.checkForHash(imghash, type, raidNo, distance)
         if doubleCheck[0]:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(
                 self.uniqueHash) + ') ] ' + 'insertHash: Already in DB - update Counter')
@@ -213,7 +276,7 @@ class MonocleWrapper:
                      % (str(imghash), str(type), str(id)))
         else:
             query = (' UPDATE trshash ' +
-                     ' set count=count+1 '
+                     ' set count=count+1, modify=NOW() '
                      ' where hash=\'%s\''
                      % (str(imghash)))
 
@@ -251,7 +314,7 @@ class MonocleWrapper:
             return False
 
         log.error("__getFortIdWithExternalId: Trying to retrieve ID of '%s'" % str(externalId))
-        query = "SELECT id FROM `forts` WHERE external_id='%s'" % str(externalId)
+        query = "SELECT id FROM forts WHERE external_id='%s'" % str(externalId)
         cursor = connection.cursor()
         log.debug("__getFortIdWithExternalId: Executing query: %s " % str(query))
 
