@@ -21,6 +21,7 @@ from telnet.telnetMore import TelnetMore
 from db.dbWrapper import DbWrapper
 from screenWrapper import ScreenWrapper
 from ocr.pogoWindows import PogoWindows
+from checkWeather import checkWeather
 import collections
 
 import cv2
@@ -691,6 +692,9 @@ def main_thread():
             #            restartPogo()
 
             # not an elif since we may have gotten a new screenshot..
+            #detectin weather
+            weather = checkWeather('screenshot.png')
+            
             if countOfRaids > 0:
                 log.debug("main: New und old Screenshoot are different - starting OCR")
                 log.debug("main: countOfRaids: %s" % str(countOfRaids))

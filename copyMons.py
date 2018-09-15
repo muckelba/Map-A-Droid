@@ -40,7 +40,7 @@ class MonRaidImages(object):
             exit(0)
 
         for file in glob.glob(monImgPath + "*mon*.png"):
-                    os.remove(file)
+            os.remove(file)
 
         for mons in data:
             for mon in mons['DexID']:
@@ -97,15 +97,31 @@ class MonRaidImages(object):
         _monList = myList = ','.join(map(str, monList))
         dbWrapper = DbWrapper(str(args.db_method), str(args.dbip), args.dbport, args.dbusername, args.dbpassword, args.dbname, args.timezone)
         dbWrapper.deleteHashTable(_monList, 'mon')
+        
+    @staticmethod
+    def copyWeather(pogoasset):
+        from shutil import copyfile
+        log.info('Processing Weather Pics')
+        weatherImgPath = os.getcwd() + '/weather/'
+        filePath = os.path.dirname(weatherImgPath)
+        if not os.path.exists(filePath):
+            LOG.info('weather directory created')
+            os.makedirs(filePath)
+        assetPath = pogoasset
+            
+        for file in glob.glob(os.path.join(assetPath, 'static_assets/png/weatherIcon_small_*.png')):
+            
+            MonRaidImages.read_transparent_png(file, os.path.join('weather', os.path.basename(file)), 0)
+
 
 
     @staticmethod
-    def read_transparent_png(assetFile, saveFile):
+    def read_transparent_png(assetFile, saveFile, bgcolor = 255):
         image_4channel = cv2.imread(assetFile, cv2.IMREAD_UNCHANGED)
         alpha_channel = image_4channel[:,:,3]
         rgb_channels = image_4channel[:,:,:3]
 
-        white_background_image = np.ones_like(rgb_channels, dtype=np.uint8) * 255
+        white_background_image = np.ones_like(rgb_channels, dtype=np.uint8) * bgcolor
 
         alpha_factor = alpha_channel[:,:,np.newaxis].astype(np.float32) / 255.0
         alpha_factor = np.concatenate((alpha_factor,alpha_factor,alpha_factor), axis=2)
@@ -121,6 +137,7 @@ class MonRaidImages(object):
     @staticmethod
     def runAll(pogoasset):
         MonRaidImages.copyMons(pogoasset)
+        MonRaidImages.copyWeather(pogoasset)
         
 if __name__ == '__main__':
     MonRaidImages.runAll('../../PogoAssets/')

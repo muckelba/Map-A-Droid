@@ -8,6 +8,8 @@ gym_img/*
 temp/*
 screenshots/*
 unknown/*
+weather/*
+weather/
 screenshot.png
 *.log
 hashing.json
