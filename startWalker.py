@@ -386,30 +386,10 @@ def getToRaidscreen(maxAttempts, again=False):
         return False
 
     checkPogoFreeze()
-    log.info("getToRaidscreen: Attempting to retrieve screenshot before checking windows")
-    # check if last screenshot is way too old to be of use...
-    # log.fatal(lastScreenshotTaken)
-    compareToTime = time.time() - lastScreenshotTaken
-    if not lastScreenshotTaken or compareToTime > 1:
-        log.info("getToRaidscreen: last screenshot too old, getting a new one")
-        # log.error("compareToTime: %s" % str(compareToTime))
-        # log.error("delayUsed: %s" % str(delayUsed))
-        log.info("getToRaidscreen: Attempting to retrieve screenshot checking windows")
-        log.info("getToRaidscreen: Waiting %s seconds befor taking screenshot" % str(args.post_screenshot_delay))
-
-        # time.sleep(args.post_screenshot_delay)
-        if not screenWrapper.getScreenshot('screenshot.png'):
-            log.error("getToRaidscreen: Failed retrieving screenshot before checking windows")
-            if not again:
-                getToRaidscreen(maxAttempts, True)
-            else:
-                return False
-            # failcount += 1
-            # TODO: consider proper errorhandling?
-            # even restart entire thing? VNC dead means we won't be using the device
-            # maybe send email? :D
-        else:
-            lastScreenshotTaken = time.time()
+    if not takeScreenshot(delayBefore=args.post_screenshot_delay):
+        if again:
+            log.error("getToRaidscreen: failed getting a screenshot again")
+        getToRaidscreen(maxAttempts, True)
 
     attempts = 0
 
@@ -419,15 +399,14 @@ def getToRaidscreen(maxAttempts, again=False):
     
     while pogoWindowManager.isGpsSignalLost('screenshot.png', 123):
         time.sleep(1)
-        if screenWrapper.getScreenshot('screenshot.png'):
-            lastScreenshotTaken = time.time()
+        takeScreenshot()
         log.warning("getToRaidscreen: GPS signal error")
         redErrorCount += 1
         if redErrorCount > 3:
             log.error("getToRaidscreen: Red error multiple times in a row, restarting")
             redErrorCount = 0
             restartPogo()
-            break
+            return False
     redErrorCount = 0
 
     while not pogoWindowManager.checkRaidscreen('screenshot.png', 123):
@@ -435,8 +414,7 @@ def getToRaidscreen(maxAttempts, again=False):
             # could not reach raidtab in given maxAttempts
             log.error("getToRaidscreen: Could not get to raidtab within %s attempts" % str(maxAttempts))
             return False
-
-
+        checkPogoFreeze()
         # not using continue since we need to get a screen before the next round...
         found = pogoWindowManager.lookForButton('screenshot.png', 2.20, 3.01)
         if found:
@@ -454,15 +432,9 @@ def getToRaidscreen(maxAttempts, again=False):
         if not found:
             log.info("getToRaidscreen: Previous checks found nothing. Checking nearby open")
             if pogoWindowManager.checkNearby('screenshot.png', 123):
-                log.debug("getToRaidscreen: done")
-                return True
+                return takeScreenshot(delayBefore=args.post_screenshot_delay)
 
-        log.info("getToRaidscreen: Waiting %s seconds before taking screenshot" % str(args.post_screenshot_delay))
-        time.sleep(args.post_screenshot_delay)
-        if screenWrapper.getScreenshot('screenshot.png'):
-            lastScreenshotTaken = time.time()
-        else:
-            log.error("getToRaidscreen: Failed getting screenshot while checking windows")
+        if not takeScreenshot(delayBefore=args.post_screenshot_delay):
             return False
 
         attempts += 1
@@ -486,7 +458,7 @@ def turnScreenOnAndStartPogo():
 def reopenRaidTab():
     global pogoWindowManager
     log.info("reopenRaidTab: Attempting to retrieve screenshot before checking raidtab")
-    if not screenWrapper.getScreenshot('screenshot.png'):
+    if not takeScreenshot():
         log.error("reopenRaidTab: Failed retrieving screenshot before checking for closebutton")
         return
     pogoWindowManager.checkCloseExceptNearbyButton('screenshot.png', '123', 'True')
@@ -494,18 +466,32 @@ def reopenRaidTab():
     time.sleep(1)
 
 
+def takeScreenshot(delayAfter=0.0, delayBefore=0.0):
+    global lastScreenshotTaken
+    time.sleep(delayBefore)
+    compareToTime = time.time() - lastScreenshotTaken
+    if lastScreenshotTaken and compareToTime < 0.5:
+        log.debug("takeScreenshot: screenshot taken recently, returning immediately")
+        return True
+    elif not screenWrapper.getScreenshot('screenshot.png'):
+        log.error("takeScreenshot: Failed retrieving screenshot")
+        return False
+    else:
+        lastScreenshotTaken = time.time()
+        time.sleep(delayAfter)
+        return True
+
+
 def checkPogoFreeze():
     global lastScreenHash
     global lastScreenHashCount
-    global lastScreenshotTaken
-    if not screenWrapper.getScreenshot('screenshot.png'):
-        log.error("checkPogoFreeze: Failed retrieving screenshot")
-    else:
-        lastScreenshotTaken = time.time()
+
+    if not takeScreenshot():
+        return
     screenHash = getImageHash('screenshot.png')
     log.debug("main: Old Hash: " + lastScreenHash)
     log.debug("main: New Hash: " + screenHash)
-    if hamming_distance(str(lastScreenHash), str(screenHash)) < 7 and lastScreenHash != '0':
+    if hamming_distance(str(lastScreenHash), str(screenHash)) < 6 and lastScreenHash != '0':
         log.debug("main: New und old Screenshoot are the same - no processing")
         lastScreenHashCount += 1
         log.debug("main: Same Screen Count: " + str(lastScreenHashCount))
@@ -659,7 +645,7 @@ def main_thread():
             log.info('main: Moving %s meters to the next position' % distance)
             delayUsed = 0
             if (args.speed == 0 or
-                    (args.max_distance and args.max_distance > 0 and distance > args.max_distance)
+                    (args.max_distance and 0 < args.max_distance < distance)
                     or (lastLat == 0.0 and lastLng == 0.0)):
                 log.info("main: Teleporting...")
                 telnGeo.setLocation(curLat, curLng, 0)
@@ -679,20 +665,9 @@ def main_thread():
                 time.sleep(0.1)
             windowLock.acquire()
             log.debug("main: Lock acquired")
-            # check if last screenshot is way too old to be of use...
-            # log.fatal(lastScreenshotTaken)
-            compareToTime = time.time() - lastScreenshotTaken
-            if not lastScreenshotTaken or compareToTime > 0.5:
-                log.info("main: last screenshot too old, getting a new one")
-                time.sleep(3)
-                # log.error("compareToTime: %s" % str(compareToTime))
-                # log.error("delayUsed: %s" % str(delayUsed))
-
-                if not screenWrapper.getScreenshot('screenshot.png'):
-                    log.error("main: Failed retrieving screenshot")
-                    # worst case: we don't have useful raidcrops
-                else:
-                    lastScreenshotTaken = time.time()
+            if not takeScreenshot():
+                windowLock.release()
+                continue
 
             if args.last_scanned:
                 log.info('main: Set new scannedlocation in Database')
@@ -705,7 +680,9 @@ def main_thread():
                 log.warning("main: Count present but no raid shown, reopening raidTab")
                 reopenRaidTab()
                 # tabOutAndInPogo()
-                screenWrapper.getScreenshot('screenshot.png')
+                if not takeScreenshot():
+                    windowLock.release()
+                    continue
                 countOfRaids = pogoWindowManager.readRaidCircles('screenshot.png', 123)
             #    elif countOfRaids == 0:
             #        emptycount += 1
@@ -714,32 +691,16 @@ def main_thread():
             #            log.error("Had 30 empty scans, restarting pogo")
             #            restartPogo()
 
-            log.debug("main: Checking Screenhash")
-            screenHash = getImageHash('screenshot.png')
-            log.debug("main: Old Hash: " + lastScreenHash)
-            log.debug("main: New Hash: " + screenHash)
-            if hamming_distance(str(lastScreenHash), str(screenHash)) < 7 and lastScreenHash != '0':
-                log.debug("main: New und old Screenshoot are the same - no processing")
-                lastScreenHashCount += 1
-                log.debug("main: Same Screen Count: " + str(lastScreenHashCount))
-                if lastScreenHashCount >= 100:
-                    lastScreenHashCount = 0
-                    restartPogo()
-            else:
-                lastScreenHash = screenHash
-                lastScreenHashCount = 0
-                if countOfRaids > 0:
-                    log.debug("main: New und old Screenshoot are different - starting OCR")
-                    log.debug("main: countOfRaids: %s" % str(countOfRaids))
-                    curTime = time.time()
-                    copyFileName = args.raidscreen_path + '/raidscreen_' + str(curTime) + "_" + str(curLat) + "_" + str(
-                        curLng) + "_" + str(countOfRaids) + '.png'
-                    log.debug('Copying file: ' + copyFileName)
-                    copyfile('screenshot.png', copyFileName)
-                    os.remove('screenshot.png')
-                else:
-                    log.debug("main: New und old Screenshoot are different - starting OCR")
-                    log.info('main: No Raids found or active')
+            # not an elif since we may have gotten a new screenshot..
+            if countOfRaids > 0:
+                log.debug("main: New und old Screenshoot are different - starting OCR")
+                log.debug("main: countOfRaids: %s" % str(countOfRaids))
+                curTime = time.time()
+                copyFileName = args.raidscreen_path + '/raidscreen_' + str(curTime) + "_" + str(curLat) + "_" + str(
+                    curLng) + "_" + str(countOfRaids) + '.png'
+                log.debug('Copying file: ' + copyFileName)
+                copyfile('screenshot.png', copyFileName)
+                os.remove('screenshot.png')
 
             log.debug("main: Releasing lock")
             windowLock.release()
@@ -773,7 +734,6 @@ def dhash(image, hash_size=8):
 
 
 def getImageHash(image, hashSize=8):
-    
     try:
         image_temp = cv2.imread(image)
     except:

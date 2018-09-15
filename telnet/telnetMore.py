@@ -95,7 +95,7 @@ class TelnetMore:
         for key in keyVals:
             if "size:" in key:
                 size = int(key.split(':')[1])
-                break;
+                break
         if size == 0:
             log.error("getScreenshot: invalid size")
             return False
