@@ -105,7 +105,7 @@ class MonRaidImages(object):
         weatherImgPath = os.getcwd() + '/weather/'
         filePath = os.path.dirname(weatherImgPath)
         if not os.path.exists(filePath):
-            LOG.info('weather directory created')
+            log.info('weather directory created')
             os.makedirs(filePath)
         assetPath = pogoasset
             
