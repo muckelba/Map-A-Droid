@@ -330,7 +330,7 @@ class MonocleWrapper:
         log.error(str(idEntry[0]))
         return idEntry[0]
 
-    def submitRaid(self, gym, pkm, lvl, start, end, type, raidNo, captureTime, MonWithNoEgg=False):
+    def submitRaid(self, gym, pkm, lvl, start, end, type, raidNo, capture_time, MonWithNoEgg=False):
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'submitRaid: Submitting raid')
 
         try:
@@ -360,7 +360,7 @@ class MonocleWrapper:
 
             setStr = 'SET level = %s, time_spawn = %s, time_battle = %s, time_end = %s, ' \
                      'pokemon_id = %s, last_updated = %s '
-            data = (lvl, captureTime, start, end, pkm, int(time.time()))
+            data = (lvl, int(capture_time), start, end, pkm, int(time.time()))
 
         elif end is None or start is None:
             # no end or start time given, just update the other stuff
@@ -388,7 +388,7 @@ class MonocleWrapper:
             # we have start and end, mon is either with egg or we're submitting an egg
             setStr = 'SET level = %s, time_spawn = %s, time_battle = %s, time_end = %s, pokemon_id = %s, ' \
                      'last_updated = %s '
-            data = (lvl, captureTime, start, end, pkm, int(time.time()))
+            data = (lvl, int(capture_time), start, end, pkm, int(time.time()))
 
         query = updateStr + setStr + whereStr
         log.debug(query % data)
@@ -406,7 +406,7 @@ class MonocleWrapper:
                 query = (
                     'INSERT INTO raids (fort_id, level, time_spawn, time_battle, time_end, pokemon_id) '
                     'VALUES (%s, %s, %s, %s, %s, %s)')
-                data = (gym, lvl, captureTime, start, end, pkm)
+                data = (gym, lvl, int(capture_time), start, end, pkm)
             elif end is None or start is None:
                 log.info(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + "Inserting without end or start")
@@ -419,7 +419,7 @@ class MonocleWrapper:
                 query = (
                     'INSERT INTO raids (fort_id, level, time_spawn, time_battle, time_end, pokemon_id) '
                     'VALUES (%s, %s, %s, %s, %s, %s)')
-                data = (gym, lvl, captureTime, start, end, pkm)
+                data = (gym, lvl, int(capture_time), start, end, pkm)
 
             cursorIns = connection.cursor()
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + query % data)
@@ -438,7 +438,7 @@ class MonocleWrapper:
 
         connection.close()
         log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'submitRaid: Submit finished')
-        self.refreshTimes(gym, raidNo, captureTime)
+        self.refreshTimes(gym, raidNo, capture_time)
 
         if args.webhook and wh_send:
             log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'submitRaid: Send webhook')
@@ -564,11 +564,11 @@ class MonocleWrapper:
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'raidExist: Mon is new - submitting')
             return False
 
-    def refreshTimes(self, gym, raidNo, captureTime):
+    def refreshTimes(self, gym, raidNo, capture_time):
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'Refresh Gym Times')
 
         # now = self.dbTimeStringToUnixTimestamp(str(datetime.datetime.now() - datetime.timedelta(hours=self.timezone)))
-        now = time.time()
+        now = int(time.time())
         try:
             connection = mysql.connector.connect(host=self.host,
                                                  user=self.user, port=self.port, passwd=self.password,
@@ -658,7 +658,7 @@ class MonocleWrapper:
                 self.uniqueHash) + ') ] ' + 'checkGymsNearby: GymHash seems not to be correct')
             return False
 
-    def setScannedLocation(self, lat, lng, captureTime):
+    def setScannedLocation(self, lat, lng, capture_time):
         log.debug('setScannedLocation: not possible with monocle')
         return True
 
