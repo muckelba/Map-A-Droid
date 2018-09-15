@@ -59,9 +59,11 @@ class Scanner:
             os.makedirs(self.www_hash)
 
     def detectRaidTime(self, raidpic, hash, raidNo, radius):
+        zero = datetime.datetime.now()
+        unixnow =  time.mktime(zero.timetuple())
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Reading Raidtimer')
         height, width, channel = raidpic.shape
-        raidtimer = raidpic[int(round(radius*2*0.03)+(2*radius)+(radius*2*0.28)):int(round(radius*2*0.03)+(2*radius)+(radius*2*0.43)), 0:width]
+        raidtimer = raidpic[int(round(radius*2*0.03)+(2*radius)+(radius*2*0.27)):int(round(radius*2*0.03)+(2*radius)+(radius*2*0.43)), 0:width]
         raidtimer = cv2.resize(raidtimer, (0,0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         emptyRaidTempPath = os.path.join(self.tempPath, str(raidNo) + str(hash) + '_emptyraid.png')
         cv2.imwrite(emptyRaidTempPath, raidtimer)
@@ -73,7 +75,6 @@ class Scanner:
         #cleanup
         os.remove(emptyRaidTempPath)
         raidFound = len(raidtimer) > 0
-
         if raidFound:
             if ':' in raidtimer:
                 log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: found raidtimer %s' % raidtimer)
@@ -81,6 +82,9 @@ class Scanner:
 
                 if hatchTime:
                     log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Hatchtime %s' % str(hatchTime))
+                    if hatchTime > unixnow + (60 * 60 * 2) or hatchTime < unixnow:
+                        log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Hatchtime not logical')
+                        return (raidFound, False, False, False)
                     #raidstart = getHatchTime(self, raidtimer) - self.timezone * (self.timezone*60*60)
                     raidstart = hatchTime #- (self.timezone * 60 * 60)
                     raidend = hatchTime + (int(args.raid_time) * 60) #- (self.timezone * 60 * 60)
@@ -96,6 +100,8 @@ class Scanner:
             return (raidFound, False, False, False)
 
     def detectRaidEndtimer(self, raidpic, hash, raidNo, radius):
+        zero = datetime.datetime.now()
+        unixnow =  time.mktime(zero.timetuple())
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidEndtimer: Reading Raidtimer')
         height, width, channel = raidpic.shape
         raidtimer = raidpic[int(round(radius*2*0.03)+(2*radius)+(radius*2*0.08)):int(round(radius*2*0.03)+(2*radius)+(radius*2*0.23)), 0:width]
@@ -120,6 +126,9 @@ class Scanner:
                 endTime = self.getEndTime(raidtimer, raidNo)
                 if endTime:
                     log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidEndtimer: Endtime %s' % str(endTime))
+                    if endTime > unixnow + (int(args.raid_time) * 60):
+                        log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidEndtimer: Endtime not logical')
+                        return (raidEndFound, False, False)
                     #raidstart = getHatchTime(self, raidtimer) - self.timezone * (self.timezone*60*60)
                     raidend = endTime  #- (self.timezone * 60 * 60)
                     #raidend = getHatchTime(self, raidtimer) + int(45*60) - (self.timezone*60*60)
