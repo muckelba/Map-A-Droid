@@ -61,7 +61,7 @@ class Scanner:
     def detectRaidTime(self, raidpic, hash, raidNo, radius):
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Reading Raidtimer')
         height, width, channel = raidpic.shape
-        raidtimer = raidpic[int(round(radius*2*0.03)+(2*radius)+(radius*2*0.26)):int(round(radius*2*0.03)+(2*radius)+(radius*2*0.43)), 0:width]
+        raidtimer = raidpic[int(round(radius*2*0.03)+(2*radius)+(radius*2*0.28)):int(round(radius*2*0.03)+(2*radius)+(radius*2*0.43)), 0:width]
         raidtimer = cv2.resize(raidtimer, (0,0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         emptyRaidTempPath = os.path.join(self.tempPath, str(raidNo) + str(hash) + '_emptyraid.png')
         cv2.imwrite(emptyRaidTempPath, raidtimer)
@@ -107,7 +107,7 @@ class Scanner:
         bw = gray.point(lambda x: 0 if x<200 else 255, '1')
 
 
-        raidtimer = pytesseract.image_to_string(bw, config='--psm 6 --oem 3').replace(' ', '').replace('~','').replace('o','0').replace('O','0').replace('-','').replace('.',':').replace('B','8').replace('A','4').replace('—','').replace('_','')
+        raidtimer = pytesseract.image_to_string(bw, config='--psm 6 --oem 3').replace(' ', '').replace('~','').replace('o','0').replace('O','0').replace('"','').replace('-','').replace('.',':').replace('B','8').replace('A','4').replace('—','').replace('_','')
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidEndtimer: Raid-End-Text: ' + str(raidtimer))
 
         os.remove(emptyRaidTempPath)
@@ -462,7 +462,7 @@ class Scanner:
                 if raidend[1]:
                     log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an mon and endtime - fast submit')
                     log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Submitting mon. ID: %s, gymId: %s' % (str(mon), str(gym)))
-                    self.dbWrapper.submitRaid(str(gym), mon, lvl, None, raidend[2], 'MON', raidNo, captureTime)
+                    self.dbWrapper.submitRaid(str(gym), mon, lvl, None, raidend[2], 'MON', raidNo, captureTime, True)
                 else:
                     log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Found Raidhash with an mon - fast submit')
                     log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Submitting mon. ID: %s, gymId: %s' % (str(mon), str(gym)))

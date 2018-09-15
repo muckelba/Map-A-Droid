@@ -355,7 +355,7 @@ class MonocleWrapper:
         whereStr = 'WHERE fort_id = %s AND time_end >= %s' % (str(gym), str(int(time.time())))
         if MonWithNoEgg:
             # submit mon without egg info -> we have an endtime
-            start = end - 45 * 60
+            start = end - (int(args.raid_time) * 60)
             log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + "Updating mon without egg")
 
             setStr = 'SET level = %s, time_spawn = %s, time_battle = %s, time_end = %s, ' \

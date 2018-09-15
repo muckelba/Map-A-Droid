@@ -489,12 +489,12 @@ def checkPogoFreeze():
     if not takeScreenshot():
         return
     screenHash = getImageHash('screenshot.png')
-    log.debug("main: Old Hash: " + lastScreenHash)
-    log.debug("main: New Hash: " + screenHash)
+    log.debug("checkPogoFreeze: Old Hash: " + lastScreenHash)
+    log.debug("checkPogoFreeze: New Hash: " + screenHash)
     if hamming_distance(str(lastScreenHash), str(screenHash)) < 6 and lastScreenHash != '0':
-        log.debug("main: New und old Screenshoot are the same - no processing")
+        log.debug("checkPogoFreeze: New und old Screenshoot are the same - no processing")
         lastScreenHashCount += 1
-        log.debug("main: Same Screen Count: " + str(lastScreenHashCount))
+        log.debug("checkPogoFreeze: Same Screen Count: " + str(lastScreenHashCount))
         if lastScreenHashCount >= 100:
             lastScreenHashCount = 0
             restartPogo()
@@ -520,7 +520,6 @@ def checkSpeedWeatherWarningThread():
         if not telnMore.isPogoTopmost():
             log.warning("checkSpeedWeatherWarningThread: Starting Pogo")
             restartPogo()
-        checkPogoFreeze()
 
         reachedRaidscreen = getToRaidscreen(10, True)
         if reachedRaidscreen:
@@ -734,6 +733,7 @@ def dhash(image, hash_size=8):
 
 
 def getImageHash(image, hashSize=8):
+    
     try:
         image_temp = cv2.imread(image)
     except:
