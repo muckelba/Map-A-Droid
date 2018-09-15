@@ -360,7 +360,7 @@ class MonocleWrapper:
 
             setStr = 'SET level = %s, time_spawn = %s, time_battle = %s, time_end = %s, ' \
                      'pokemon_id = %s, last_updated = %s '
-            data = (lvl, int(capture_time), start, end, pkm, int(time.time()))
+            data = (lvl, int(float(capture_time)), start, end, pkm, int(time.time()))
 
         elif end is None or start is None:
             # no end or start time given, just update the other stuff
@@ -388,7 +388,7 @@ class MonocleWrapper:
             # we have start and end, mon is either with egg or we're submitting an egg
             setStr = 'SET level = %s, time_spawn = %s, time_battle = %s, time_end = %s, pokemon_id = %s, ' \
                      'last_updated = %s '
-            data = (lvl, int(capture_time), start, end, pkm, int(time.time()))
+            data = (lvl, int(float(capture_time)), start, end, pkm, int(time.time()))
 
         query = updateStr + setStr + whereStr
         log.debug(query % data)
@@ -406,7 +406,7 @@ class MonocleWrapper:
                 query = (
                     'INSERT INTO raids (fort_id, level, time_spawn, time_battle, time_end, pokemon_id) '
                     'VALUES (%s, %s, %s, %s, %s, %s)')
-                data = (gym, lvl, int(capture_time), start, end, pkm)
+                data = (gym, lvl, int(float(capture_time)), start, end, pkm)
             elif end is None or start is None:
                 log.info(
                     '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + "Inserting without end or start")
@@ -419,7 +419,7 @@ class MonocleWrapper:
                 query = (
                     'INSERT INTO raids (fort_id, level, time_spawn, time_battle, time_end, pokemon_id) '
                     'VALUES (%s, %s, %s, %s, %s, %s)')
-                data = (gym, lvl, int(capture_time), start, end, pkm)
+                data = (gym, lvl, int(float(capture_time)), start, end, pkm)
 
             cursorIns = connection.cursor()
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + query % data)
