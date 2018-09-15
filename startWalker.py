@@ -385,7 +385,7 @@ def getToRaidscreen(maxAttempts, again=False):
     if not pogoTopmost:
         return False
 
-    checkPogoFreeze()
+    #checkPogoFreeze()
     log.info("getToRaidscreen: Attempting to retrieve screenshot before checking windows")
     # check if last screenshot is way too old to be of use...
     # log.fatal(lastScreenshotTaken)
@@ -534,7 +534,7 @@ def checkSpeedWeatherWarningThread():
         if not telnMore.isPogoTopmost():
             log.warning("checkSpeedWeatherWarningThread: Starting Pogo")
             restartPogo()
-        checkPogoFreeze()
+        #checkPogoFreeze()
 
         reachedRaidscreen = getToRaidscreen(10, True)
         if reachedRaidscreen:
