@@ -11,6 +11,7 @@ import requests
 import shutil
 import sys
 import os
+from s2Helper import S2Helper
 
 log = logging.getLogger(__name__)
 
@@ -657,6 +658,35 @@ class MonocleWrapper:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(
                 self.uniqueHash) + ') ] ' + 'checkGymsNearby: GymHash seems not to be correct')
             return False
+            
+    def updateInsertWeather(self, lat, lng, weatherid, captureTime):
+        log.debug('updateInsertWeather: not possible with monocle atm')
+        return 
+        #Todo!
+        now_timezone = datetime.datetime.fromtimestamp(float(captureTime))
+        now_timezone = time.mktime(now_timezone.timetuple()) - (self.timezone * 60 * 60)
+        s2cellid = S2Helper.latLngToCellId(lat, lng)
+        try:
+            connection = mysql.connector.connect(host=self.host,
+                                                 user=self.user, port=self.port, passwd=self.password,
+                                                 db=self.database)
+        except:
+            log.error("Could not connect to the SQL database")
+            return []
+        cursor = connection.cursor()
+        
+        query = ('INSERT INTO weather ' + 
+                '(s2_cell_id, latitude, longitude, cloud_level, rain_level, ' +
+                'wind_level, snow_level, fog_level, wind_direction, gameplay_weather, ' +
+                'severity, warn_weather, world_time, last_updated) VALUES ' + 
+                ' (' + str(s2cellid) + ', ' + str(lat) + ', ' + str(lng) + ', NULL, NULL, NULL, NULL, NULL, NULL, ' +
+                '' + str(weatherid) + ', NULL, NULL, ' + str(args.timezone) + ', FROM_UNIXTIME(\'' + str(now_timezone) + '\'))' + 
+                ' ON DUPLICATE KEY UPDATE fog_level=0, cloud_level=0, snow_level=0, wind_direction=0, world_time=' + str(args.timezone) + ', ' + 
+                ' gameplay_weather=' + str(weatherid) + ', last_updated=FROM_UNIXTIME(\'' + str(now_timezone) + '\')')
+        log.error(query)
+        cursor.execute(query)
+        connection.commit()
+        cursor.close()
 
     def setScannedLocation(self, lat, lng, capture_time):
         log.debug('setScannedLocation: not possible with monocle')

@@ -23,3 +23,4 @@ mon_img/_mon*
 www_hash/*
 updateGyms.txt
 venv/
+route.calc

@@ -188,6 +188,10 @@ def parseArgs():
                         help='Active webhook support')
     parser.add_argument('-whurl', '--webhook_url', default='',
                         help='URL to receive webhooks')
+
+    # weather
+    parser.add_argument('-w', '--weather', action='store_true', default=False,
+                        help='Read weather and post to db - if supported! (Default: False)')
                         
     # MADmin
     parser.add_argument('-mmt', '--madmin_time', default='24',

@@ -453,7 +453,7 @@ def turnScreenOnAndStartPogo():
         time.sleep(args.post_turn_screen_on_delay)
     # check if pogo is running and start it if necessary
     log.warning("turnScreenOnAndStartPogo: (Re-)Starting Pogo")
-    restartPogo()
+    #restartPogo()
 
 
 def reopenRaidTab():
@@ -693,7 +693,14 @@ def main_thread():
 
             # not an elif since we may have gotten a new screenshot..
             #detectin weather
-            weather = checkWeather('screenshot.png')
+            if args.weather:
+                weather = checkWeather('screenshot.png')
+                if weather[0]:
+                    log.debug('Submit Weather')
+                    dbWrapper.updateInsertWeather(curLat, curLng, weather[1], curTime)
+                else:
+                    log.error('Weather could not detected')
+            
             
             if countOfRaids > 0:
                 log.debug("main: New und old Screenshoot are different - starting OCR")

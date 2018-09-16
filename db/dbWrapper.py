@@ -64,6 +64,9 @@ class DbWrapper:
         
     def checkGymsNearby(self, lat, lng, hash, raidNo, gymId):
         return self.__dbWrapperUsed.checkGymsNearby(lat, lng, hash, raidNo, gymId)
+        
+    def updateInsertWeather(self, lat, lng, weatherid, captureTime):
+        return self.__dbWrapperUsed.updateInsertWeather(lat, lng, weatherid, captureTime)
 
     def setScannedLocation(self, lat, lng, captureTime):
         return self.__dbWrapperUsed.setScannedLocation(lat, lng, captureTime)
