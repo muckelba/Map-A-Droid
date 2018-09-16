@@ -560,7 +560,7 @@ def main_thread():
     if lastPogoRestart is None:
         lastPogoRestart = time.time()
 
-    route = getJsonRoute(args.file, args.gym_distance, args.max_count_gym_sum_up_around_gym)
+    route = getJsonRoute(args.file, args.gym_distance, args.max_count_gym_sum_up_around_gym, args.route_file)
 
     log.info("main: Route to be taken: %s, amount of coords: %s" % (str(route), str(len(route))))
     log.info("main: Max_distance before teleporting: %s" % args.max_distance)

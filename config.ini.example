@@ -85,6 +85,7 @@ pogoasset:                   # Path to Pogo Assets: See: https://github.com/ZeCh
 #npFrom:                     # Matching Zoom - Start Value (default: 0.2 (for width = 720px )- or: 0.5 (for width = 1080px ))
 #gym_scan_distance:          # Distance of scanned Gyms (Default: 6km(!!)) - reduce if you scan an area with many gyms at one place
 #weather                     # Detect weather from captured Image and post to database - if your frontend support this!
+#route_file:                 # Filename for Route Cache (Default: route.calc)
 
 # timezone settings
 ######################

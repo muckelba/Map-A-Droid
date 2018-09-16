@@ -197,6 +197,11 @@ def parseArgs():
     parser.add_argument('-mmt', '--madmin_time', default='24',
                         help='MADmin clock format (12/24) (Default: 24)')
                         
+    parser.add_argument('-rfile', '--route_file', default='route.calc',
+                        help='Filename for Route Cache (Default: route.calc)')
+                        
+    # etc
+                        
     parser.add_argument('-rdt', '--raid_time', default='45', type=int,
                         help='Raid Battle time in minutes. (Default: 45)')    
 
