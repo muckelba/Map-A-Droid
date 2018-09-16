@@ -8,8 +8,8 @@ class S2Helper:
         regionCover.min_level = 10
         regionCover.max_level = 10
         regionCover.max_cells = 1
-        p1 = s2sphere.LatLng.from_degrees(49, 9)
-        p2 = s2sphere.LatLng.from_degrees(49, 9)
+        p1 = s2sphere.LatLng.from_degrees(lat, lng)
+        p2 = s2sphere.LatLng.from_degrees(lat, lng)
         covering = regionCover.get_covering(s2sphere.LatLngRect.from_point_pair(p1, p2))
         # we will only get our desired cell ;)
         return covering[0].id()
