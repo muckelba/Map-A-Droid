@@ -73,7 +73,8 @@ class MonocleWrapper:
                     send_webhook(row[1], 'MON', row[2], row[3], 5, mon_id)
 
                 elif affected_rows > 1:
-                    log.error('Something is wrong with the indexing on your table you raids on this id {0}'.format(row['id']))
+                    log.error(
+                        'Something is wrong with the indexing on your table you raids on this id {0}'.format(row['id']))
                 else:
                     log.error('The row we wanted to update did not get updated that had id {0}'.format(row['id']))
 
@@ -210,9 +211,10 @@ class MonocleWrapper:
         query = ('SELECT id, hash, BIT_COUNT( '
                  'CONVERT((CONV(hash, 16, 10)), UNSIGNED) '
                  '^ CONVERT((CONV(\'' + str(imghash) + '\', 16, 10)), UNSIGNED)) as hamming_distance, '
-                 'type, count, modify FROM trshash '
-                 'HAVING hamming_distance < ' + str(distance) + '  and type = \'' + str(type) + '\' '
-                 'ORDER BY hamming_distance ASC')
+                                                       'type, count, modify FROM trshash '
+                                                       'HAVING hamming_distance < ' + str(
+            distance) + '  and type = \'' + str(type) + '\' '
+                                                        'ORDER BY hamming_distance ASC')
 
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: ' + query)
         cursor.execute(query)
@@ -232,7 +234,7 @@ class MonocleWrapper:
             log.debug(
                 '[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'checkForHash: No matching Hash found')
             return False, None, None, None, None
-            
+
     def getAllHash(self, type):
         try:
             connection = mysql.connector.connect(host=self.host,
@@ -250,7 +252,7 @@ class MonocleWrapper:
 
         cursor.execute(query)
         data = cursor.fetchall()
-        
+
         return data
 
     def insertHash(self, imghash, type, id, raidNo):
@@ -645,7 +647,7 @@ class MonocleWrapper:
                  ' ) ' +
                  ' ) AS distance ' +
                  ' FROM forts ' +
-                 ' HAVING distance <= ' + str(args.gym_scan_distance+5) + ' and id=\'' + str(gym) + '\'')
+                 ' HAVING distance <= ' + str(args.gym_scan_distance + 5) + ' and id=\'' + str(gym) + '\'')
 
         cursor.execute(query)
         data = cursor.fetchall()
@@ -658,13 +660,10 @@ class MonocleWrapper:
             log.debug('[Crop: ' + str(raidNo) + ' (' + str(
                 self.uniqueHash) + ') ] ' + 'checkGymsNearby: GymHash seems not to be correct')
             return False
-            
+
     def updateInsertWeather(self, lat, lng, weatherid, captureTime):
-        log.debug('updateInsertWeather: not possible with monocle atm')
-        return 
-        #Todo!
-        now_timezone = datetime.datetime.fromtimestamp(float(captureTime))
-        now_timezone = time.mktime(now_timezone.timetuple()) - (self.timezone * 60 * 60)
+        log.debug(
+            'updateInsertWeather: for {0}, {1} with WeatherId {2} at {3}'.format(lat, lng, weatherid, captureTime))
         s2cellid = S2Helper.latLngToCellId(lat, lng)
         try:
             connection = mysql.connector.connect(host=self.host,
@@ -674,15 +673,12 @@ class MonocleWrapper:
             log.error("Could not connect to the SQL database")
             return []
         cursor = connection.cursor()
-        
-        query = ('INSERT INTO weather ' + 
-                '(s2_cell_id, latitude, longitude, cloud_level, rain_level, ' +
-                'wind_level, snow_level, fog_level, wind_direction, gameplay_weather, ' +
-                'severity, warn_weather, world_time, last_updated) VALUES ' + 
-                ' (' + str(s2cellid) + ', ' + str(lat) + ', ' + str(lng) + ', NULL, NULL, NULL, NULL, NULL, NULL, ' +
-                '' + str(weatherid) + ', NULL, NULL, ' + str(args.timezone) + ', FROM_UNIXTIME(\'' + str(now_timezone) + '\'))' + 
-                ' ON DUPLICATE KEY UPDATE fog_level=0, cloud_level=0, snow_level=0, wind_direction=0, world_time=' + str(args.timezone) + ', ' + 
-                ' gameplay_weather=' + str(weatherid) + ', last_updated=FROM_UNIXTIME(\'' + str(now_timezone) + '\')')
+
+        query = ("INSERT INTO weather " +
+                 "(s2_cell_id, `condition`, alert_severity, warn, day, updated) " +
+                 "VALUES ({0}, {1}, {2}, {3}, {4}, {5}) "
+                 "ON DUPLICATE KEY UPDATE `condition`={1}, alert_severity={2}, warn = {3}, day={4}, updated={5}"
+                 .format(s2cellid, weatherid, 0, 0, 2, int(float(captureTime))))
         log.error(query)
         cursor.execute(query)
         connection.commit()
