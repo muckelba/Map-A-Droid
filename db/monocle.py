@@ -5,7 +5,7 @@ import datetime
 import collections
 import datetime
 import time
-from webhook import send_webhook
+from webhook import send_raid_webhook, send_weather_webhook
 from walkerArgs import parseArgs
 import requests
 import shutil
@@ -70,7 +70,7 @@ class MonocleWrapper:
                     counter = counter + 1
 
                     log.debug('Sending auto hatched raid for raid id {0}'.format(row[0]))
-                    send_webhook(row[1], 'MON', row[2], row[3], 5, mon_id)
+                    send_raid_webhook(row[1], 'MON', row[2], row[3], 5, mon_id)
 
                 elif affected_rows > 1:
                     log.error(
@@ -445,7 +445,7 @@ class MonocleWrapper:
 
         if args.webhook and wh_send:
             log.info('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) + ') ] ' + 'submitRaid: Send webhook')
-            send_webhook(gym, 'RAID', wh_start, wh_end, lvl, pkm)
+            send_raid_webhook(gym, 'RAID', wh_start, wh_end, lvl, pkm)
 
         return True
 
@@ -683,6 +683,7 @@ class MonocleWrapper:
         cursor.execute(query)
         connection.commit()
         cursor.close()
+        send_weather_webhook(s2cellid, weatherid, 0, 0, 2, int(float(captureTime)))
 
     def setScannedLocation(self, lat, lng, capture_time):
         log.debug('setScannedLocation: not possible with monocle')

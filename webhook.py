@@ -11,7 +11,7 @@ sys.setdefaultencoding('utf8')
 log = logging.getLogger(__name__)
 args = parseArgs()
 
-webhook_payload = """[{{
+raid_webhook_payload = """[{{
       "message": {{
         "latitude": {lat},
         "longitude": {lon},
@@ -53,7 +53,7 @@ def get_raid_boss_cp(mon_id):
         return '0'
 
 
-def send_webhook(gymid, type, start, end, lvl, mon=0):
+def send_raid_webhook(gymid, type, start, end, lvl, mon=0):
     log.info('Start preparing values for web hook')
     
     if mon is None:
@@ -123,7 +123,7 @@ def send_webhook(gymid, type, start, end, lvl, mon=0):
             log.debug('data_sponsor: ' + str(sponsor))
 
     if args.webhook:
-        payload_raw = webhook_payload.format(
+        payload_raw = raid_webhook_payload.format(
             ext_id=gym_id,
             lat=lat,
             lon=lon,
@@ -158,6 +158,34 @@ def send_webhook(gymid, type, start, end, lvl, mon=0):
             log.error(str(response.status_code) + " - there was an issue sending to the webhook!")
             log.error(response)
 
+weather_webhook_payload = """[{{
+      "message": {{
+        "s2_cell_id":"{0}",
+        "condition":"{1}",
+        "alert_severity":"{2}",
+        "warn":"{3}",
+        "day":"{4}",
+        "updated":"{5}
+      }},
+      "type": "weather"
+   }} ]"""
+
+def send_weather_webhook(s2cellId, weatherId, severe, warn, day, time):
+    if args.weather_webhook:
+        weather_json = weather_webhook_payload.format(s2cellId, weatherId, severe, warn, day, time)
+
+        payload = json.loads(weather_json)
+        response = requests.post(
+            args.webhook_url, data=json.dumps(payload),
+            headers={'Content-Type': 'application/json'}
+        )
+        if response.status_code == 200:
+            log.info("Webhook sent successful for " + type + " weather " + weatherId + " cellId " + s2cellId)
+        else:
+            log.error(str(response.status_code) + " - there was an issue sending to the webhook!")
+            log.error(response)
+    else:
+        log.debug("Weather Webhook Disabled")
 
 if __name__ == '__main__':
-    send_webhook('33578092c5554275a589bd1e144bbbcc.16', 'EGG', '1534163280', '1534165980', '5', 004)
+    send_raid_webhook('33578092c5554275a589bd1e144bbbcc.16', 'EGG', '1534163280', '1534165980', '5', 004)
