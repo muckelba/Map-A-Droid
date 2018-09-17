@@ -683,7 +683,7 @@ class MonocleWrapper:
         cursor.execute(query)
         connection.commit()
         cursor.close()
-        send_weather_webhook(s2cellid, weatherid, 0, 0, 2, int(float(captureTime)))
+        send_weather_webhook(s2cellid, weatherid, 0, 0, 2, float(captureTime))
 
     def setScannedLocation(self, lat, lng, capture_time):
         log.debug('setScannedLocation: not possible with monocle')
