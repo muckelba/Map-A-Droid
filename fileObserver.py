@@ -99,6 +99,9 @@ class checkScreenshot(PatternMatchingEventHandler):
         log.debug("Read a lng of %s in new file" % str(captureLng))
         log.debug("Read a raidcount of %s in new file" % str(amountOfRaids))
         raidPic = cv2.imread(event.src_path)
+        if raidPic is None:
+            log.warning("FileObserver: Image passed is None, aborting.")
+            return
         # amountOfRaids = self.pogoWindowManager.getAmountOfRaids(event.src_path)
         if amountOfRaids is None or amountOfRaids == 0:
             return
