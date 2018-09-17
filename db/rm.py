@@ -76,10 +76,10 @@ class RmWrapper:
                                  mon_id)
                 elif affected_rows > 1:
                     log.error('Something is wrong with the indexing on your table you raids on this id {0}'
-                              .format(row['id']))
+                              .format(row[0]))
                 else:
                     log.error('The row we wanted to update did not get updated that had id {0}'
-                              .format(row['id']))
+                              .format(row[0]))
 
             if counter == rows_that_need_hatch_count:
                 log.info("{0} gym(s) were updated as part of the regular level 5 egg hatching checks"
