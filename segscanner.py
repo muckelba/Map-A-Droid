@@ -417,6 +417,7 @@ class Scanner:
         
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Generating Raidhash')
         genRaidHash = self.getImageHash(raidhashPic, False, raidNo, 'raid')
+        return
 
         #get (raidstart, raidend, raidtimer) as (timestamp, timestamp, human-readable hatch)
         raidtimer = self.detectRaidTime(img, hash, raidNo, radius)

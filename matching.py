@@ -51,8 +51,9 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
         
         height_f, width_f, channel_f = fort_img.shape
 
-        npValue= args.npValue
-        npFrom = args.npFrom
+        npValue=radius/217.0
+        npFrom =radius/161.0
+        matchCount = radius/10.0
 
     else:
         tempFile = str(hash) + "_resize_" + str(raidNo) +".jpg"
@@ -66,6 +67,7 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
         os.remove(tempFile)
         npValue= 1.0
         npFrom = 0.2
+        matchCount=10
 
     if crop.mean() == 255 or crop.mean() == 0:
         return 0.0
@@ -73,7 +75,7 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
     (tH, tW) = crop.shape[:2]
 
     found = None
-    for scale in np.linspace(npFrom, npValue, 10)[::-1]:
+    for scale in np.linspace(npFrom, npValue, matchCount)[::-1]:
 
         resized = imutils.resize(fort_img, width = int(fort_img.shape[1] * scale))
         r = fort_img.shape[1] / float(resized.shape[1])
