@@ -259,9 +259,9 @@ def __getShortestDistanceOfPointLessMax(point, coordinates, maxDistance):
 
 def getJsonRoute(filePath, gymDistance, maxAmountOfGymsToSumUpWithGym, routefile):
     export_data = []
-    if os.path.isfile(routefile):
+    if os.path.isfile(routefile + '.calc'):
         log.info('Found existing Routefile')
-        route = open(routefile, 'r') 
+        route = open(routefile + '.calc', 'r') 
         for line in route: 
             lineSplit = line.split(',')
             export_data.append({'lat' : float(lineSplit[0].replace('\n','')),
@@ -377,7 +377,7 @@ def getJsonRoute(filePath, gymDistance, maxAmountOfGymsToSumUpWithGym, routefile
 
     
     for i in range(len(sol_best)):
-        with open(routefile, 'a') as f:
+        with open(routefile + '.calc', 'a') as f:
             f.write(str(lessCoordinates[int(sol_best[i])][0].item()) + ', ' + str(lessCoordinates[int(sol_best[i])][1].item()) + '\n')
         export_data.append({'lat' : lessCoordinates[int(sol_best[i])][0].item(),
             'lng' : lessCoordinates[int(sol_best[i])][1].item()})

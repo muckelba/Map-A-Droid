@@ -198,8 +198,8 @@ def parseArgs():
     parser.add_argument('-mmt', '--madmin_time', default='24',
                         help='MADmin clock format (12/24) (Default: 24)')
                         
-    parser.add_argument('-rfile', '--route_file', default='route.calc',
-                        help='Filename for Route Cache (Default: route.calc)')
+    parser.add_argument('-rfile', '--route_file', default='route',
+                        help='Filename for Route Cache without extension (Default: route)')
                         
     # etc
                         
