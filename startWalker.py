@@ -237,7 +237,7 @@ def sleeptimer():
         log.debug("Time Til: %s" % tmTil)
 
         if tmNow >= tmFrom or tmNowNextDay < tmTil:
-            log.info('sleeptimer: Going to sleep - byebye')
+            log.info('sleeptimer: Going to sleep - bye bye')
             # Stopping pogo...
             if telnMore:
                 telnMore.stopApp("com.nianticlabs.pokemongo")
@@ -252,7 +252,7 @@ def sleeptimer():
                 tmNow = datetime.datetime.strptime(datetime.datetime.now().strftime('%H:%M'), "%H:%M")
                 tmNowNextDay = tmNow + datetime.timedelta(hours=24)
                 log.debug('sleeptimer: Still sleeping, current time... %s' % str(tmNow))
-                if tmNow > tmTil:
+                if tmNowNextDay >= tmTil and tmNow < tmFrom:
                     log.debug("Time now: %s" % tmNow)
                     log.debug("Time Now Next Day: %s" % tmNowNextDay)
                     log.debug("Time From: %s" % tmFrom)
