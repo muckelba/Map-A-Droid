@@ -667,7 +667,7 @@ class RmWrapper:
         cursor.execute(query)
         connection.commit()
         cursor.close()
-        send_weather_webhook(s2cellid, weatherid, 0, 0, 2, int(float(captureTime)))
+        send_weather_webhook(s2cellid, weatherid, 0, 0, 2, now_timezone)
 
         
 
