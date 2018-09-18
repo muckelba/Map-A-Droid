@@ -701,6 +701,7 @@ class RmWrapper:
         except:
             log.error("Could not connect to the SQL database")
             return False
+        from geofenceHelper import GeofenceHelper
         log.info('Downloading coords')
         lll = args.latlngleft
         llr = args.latlngright
@@ -712,10 +713,16 @@ class RmWrapper:
         cursor = connection.cursor()
         cursor.execute(query)
         file = open(args.file, 'w')
-        for (latitude, longitude) in cursor:
-            file.write(str(latitude) + ', ' + str(longitude) + '\n')
+        listOfCoords = []
+        for (lat, lon) in cursor:
+            # file.write(str(lat) + ', ' + str(lon) + '\n')
+            listOfCoords.append([lat, lon])
         cursor.close()
         connection.close()
+        geofenceHelper = GeofenceHelper()
+        geofencedCoords = geofenceHelper.get_geofenced_coordinates(listOfCoords)
+        for (lat, lon) in geofencedCoords:
+            file.write(str(lat) + ', ' + str(lon) + '\n')
         file.close()
         log.info('Downloading finished.')
         return True

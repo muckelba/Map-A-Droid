@@ -74,22 +74,20 @@ def updateEntry(gymName, lat, long, uri):
         print("Could not find gym, inserting gym with new ID %s" % resultGym_id)
 
         queryInsertGym = "INSERT INTO gym (gym_id, latitude, longitude, team_id, guard_pokemon_id, slots_available, enabled, total_cp," \
-            "is_in_battle, last_modified, last_scanned) VALUES (\"{}\", {}, {}, {}, {}, {}, {}, {}, {}, NOW(), NOW())".format(resultGym_id,
-                                                                                                                              resultLatitude,
-                                                                                                                              resultLongitude,
-                                                                                                                              0, 0, 0, 1, 0, 0)
+            "is_in_battle, last_modified, last_scanned) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())"
+        values = (resultGym_id, resultLatitude, resultLongitude, 0, 0, 0, 1, 0, 0)
         print("Using the following query: %s" % queryInsertGym)
         cursor = connection.cursor()
-        cursor.execute(queryInsertGym)
+        cursor.execute(queryInsertGym, values)
         cursor.close()
 
     # the gym should now be in the DB, let's INSERT or UPDATE without a check
-    queryInsertUpdateGymDetail = "INSERT INTO gymdetails (gym_id, name, url, last_scanned) VALUES (\"{}\", \"{}\", \"{}\", NOW()) " \
-                                 "ON DUPLICATE KEY UPDATE gym_id = \"{}\", name = \"{}\", url = \"{}\"".format(
-                                    resultGym_id, gymName, uri, resultGym_id, gymName, uri)
+    queryInsertUpdateGymDetail = "INSERT INTO gymdetails (gym_id, name, url, last_scanned) VALUES (%s, %s, %s, NOW()) " \
+                                 "ON DUPLICATE KEY UPDATE gym_id = %s, name = %s, url = %s"
+    gymDetailValues = (resultGym_id, gymName, uri, resultGym_id, gymName, uri)
     print("Calling query: %s" % queryInsertUpdateGymDetail)
     cursorSec = connection.cursor()
-    cursorSec.execute(queryInsertUpdateGymDetail)
+    cursorSec.execute(queryInsertUpdateGymDetail, gymDetailValues)
     cursorSec.close()
     connection.commit()
 
@@ -106,14 +104,8 @@ def main():
     for line in content:
         if len(line) < 5:
             continue
-        values = re.split(''',(?=(?:[^'"]|'[^']*'|"[^"]*")*$)''', line)
-        values = [x.strip() for x in values]
-        if len(values) != 4:
-            print("Line { %s } appears to be invalid" % str(values))
-            continue
-        if "name" in values[0]:
-            # default first line, continue
-            continue
+        # strict regex...
+        values = re.search(r'"(.*)"\s*,\s*(\d+\.\d+)\s*,\s*(\d+\.\d+)\s*,\s*"(.*)"\s*', line).groups()
         updateEntry(values[0], float(values[1]), float(values[2]), values[3])
 
     connection.close()

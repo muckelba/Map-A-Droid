@@ -650,6 +650,16 @@ def main_thread():
                 log.info("main: Teleporting...")
                 telnGeo.setLocation(curLat, curLng, 0)
                 delayUsed = args.post_teleport_delay
+
+                if 0 < args.walk_after_teleport_distance < distance:
+                    toWalk = getDistanceOfTwoPointsInMeters(float(curLat), float(curLng), float(curLat) + 0.0002, float(curLng) + 0.0002)
+                    log.error("Walking a bit: %s" % str(toWalk))
+                    time.sleep(1)
+                    telnGeo.walkFromTo(curLat, curLng, curLat + 0.0002, curLng + 0.0002, 15)
+                    log.error("Walking back")
+                    time.sleep(1)
+                    telnGeo.walkFromTo(curLat + 0.0002, curLng + 0.0002, curLat, curLng, 15)
+                    log.error("Done walking")
             else:
                 log.info("main: Walking...")
                 telnGeo.walkFromTo(lastLat, lastLng, curLat, curLng, args.speed)

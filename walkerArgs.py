@@ -111,6 +111,10 @@ def parseArgs():
                         help=(
                             'The delay in minutes to wait after an egg has hatched to move to the location of the '
                             'gym. Default: 3.5'))
+    parser.add_argument('-watd', '--walk_after_teleport_distance', required=False, type=int, default=0,
+                        help=(
+                            'The walk a couple meters after a teleport covering a greater distance than this value. '
+                            'Supposedly helps with loading'))
 
     # Runtypes
     parser.add_argument('-os', '--only_scan', action='store_true', default=False,
@@ -199,7 +203,17 @@ def parseArgs():
                         
     parser.add_argument('-rfile', '--route_file', default='route.calc',
                         help='Filename for Route Cache (Default: route.calc)')
-                        
+
+    # Geofences
+    parser.add_argument('-gf', '--geofence-file',
+                        help=('Geofence file to define outer borders of the ' +
+                              'scan area.'),
+                        default='')
+    parser.add_argument('-gef', '--geofence-excluded-file',
+                        help=('File to define excluded areas inside scan ' +
+                              'area. Regarded this as inverted geofence. ' +
+                              'Can be combined with geofence-file.'),
+                        default='')
     # etc
                         
     parser.add_argument('-rdt', '--raid_time', default='45', type=int,

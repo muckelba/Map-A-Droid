@@ -696,6 +696,7 @@ class MonocleWrapper:
         except:
             log.error("Could not connect to the SQL database")
             return False
+        from geofenceHelper import GeofenceHelper
         log.info('Downloading coords')
         lll = args.latlngleft
         llr = args.latlngright
@@ -707,11 +708,15 @@ class MonocleWrapper:
         cursor = connection.cursor()
         cursor.execute(query)
         file = open(args.file, 'w')
-        for (lat, lon) in cursor:
-            file.write(str(lat) + ', ' + str(lon) + '\n')
+        listOfCoords = []
+        for (latitude, longitude) in cursor:
+            listOfCoords.append([latitude, longitude])
         cursor.close()
         connection.close()
-        file.close()
+        geofenceHelper = GeofenceHelper()
+        geofencedCoords = geofenceHelper.get_geofenced_coordinates(listOfCoords)
+        for (lat, lon) in geofencedCoords:
+            file.write(str(lat) + ', ' + str(lon) + '\n')
         log.info('Downloading finished.')
         return True
 
