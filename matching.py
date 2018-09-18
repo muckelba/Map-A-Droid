@@ -53,7 +53,7 @@ def fort_image_matching(url_img_name, fort_img_name, zoom, value, raidNo, hash, 
 
         npValue=radius/217.0
         npFrom =radius/161.0
-        matchCount = radius/10.0
+        matchCount = radius/10.0 + 2
 
     else:
         tempFile = str(hash) + "_resize_" + str(raidNo) +".jpg"

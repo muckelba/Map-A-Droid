@@ -17,7 +17,7 @@ raid_webhook_payload = """[{{
         "latitude": {lat},
         "longitude": {lon},
         "level": {lvl},
-        "pokemon_id": {poke_id},
+        "pokemon_id": "{poke_id}",
         "team": {team},
         "cp": "{cp}",
         "move_1": {move_1},
