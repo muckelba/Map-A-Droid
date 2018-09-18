@@ -687,8 +687,13 @@ class RmWrapper:
                 'band3, band4, band5, midpoint, width) values ' +
                 '(' + str(
             time.time()) + ', ' + lat + ', ' + lng + ', \'' + now + '\', 1, -1, -1, -1, -1, -1, -1, -1)')
-        cursor.execute(query)
-
+        try:
+            cursor.execute(query)
+        except Exception:
+            log.warn("setScannedLocation: failed setting the last scanned location.")
+            cursor.close()
+            connection.close()
+            return False
         connection.commit()
         cursor.close()
         connection.close()

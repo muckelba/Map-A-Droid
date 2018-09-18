@@ -493,7 +493,7 @@ def checkPogoFreeze():
     screenHash = getImageHash('screenshot.png')
     log.debug("checkPogoFreeze: Old Hash: " + lastScreenHash)
     log.debug("checkPogoFreeze: New Hash: " + screenHash)
-    if hamming_distance(str(lastScreenHash), str(screenHash)) < 6 and lastScreenHash != '0':
+    if hamming_distance(str(lastScreenHash), str(screenHash)) < 4 and lastScreenHash != '0':
         log.debug("checkPogoFreeze: New und old Screenshoot are the same - no processing")
         lastScreenHashCount += 1
         log.debug("checkPogoFreeze: Same Screen Count: " + str(lastScreenHashCount))
@@ -653,13 +653,13 @@ def main_thread():
                 delayUsed = args.post_teleport_delay
 
                 if 0 < args.walk_after_teleport_distance < distance:
-                    toWalk = getDistanceOfTwoPointsInMeters(float(curLat), float(curLng), float(curLat) + 0.0002, float(curLng) + 0.0002)
+                    toWalk = getDistanceOfTwoPointsInMeters(float(curLat), float(curLng), float(curLat) + 0.00009, float(curLng) + 0.00009)
                     log.error("Walking a bit: %s" % str(toWalk))
-                    time.sleep(1)
-                    telnGeo.walkFromTo(curLat, curLng, curLat + 0.0002, curLng + 0.0002, 15)
+                    time.sleep(0.5)
+                    telnGeo.walkFromTo(curLat, curLng, curLat + 0.00009, curLng + 0.00009, 10)
                     log.error("Walking back")
-                    time.sleep(1)
-                    telnGeo.walkFromTo(curLat + 0.0002, curLng + 0.0002, curLat, curLng, 15)
+                    time.sleep(0.5)
+                    telnGeo.walkFromTo(curLat + 0.00009, curLng + 0.00009, curLat, curLng, 10)
                     log.error("Done walking")
             else:
                 log.info("main: Walking...")
