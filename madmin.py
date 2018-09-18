@@ -56,11 +56,11 @@ def root():
 
 @app.route('/raids', methods=['GET'])
 def raids():
-    return render_template('raids.html')
+    return render_template('raids.html', sort = str(args.madmin_sort) )
     
 @app.route('/gyms', methods=['GET'])
 def gyms():
-    return render_template('gyms.html')
+    return render_template('gyms.html', sort = args.madmin_sort)
 
 @app.route('/unknown', methods=['GET'])
 def unknown():
@@ -446,6 +446,6 @@ def creation_date(path_to_file):
             # so we'll settle for when its content was last modified.
             return stat.st_mtime
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    app.run(host='0.0.0.0', port=args.madmin_port, threaded=True)
 
     

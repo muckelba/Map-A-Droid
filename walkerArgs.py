@@ -202,6 +202,12 @@ def parseArgs():
     parser.add_argument('-mmt', '--madmin_time', default='24',
                         help='MADmin clock format (12/24) (Default: 24)')
                         
+    parser.add_argument('-mmsc', '--madmin_sort', default='6',
+                        help='MADmin sort column Raid/Gym (5= Modify / 6 = Create) (Default: 6)')
+                    
+    parser.add_argument('-mmprt', '--madmin_port', default='5000',
+                        help='MADmin web port (Default: 5000)')
+                        
     parser.add_argument('-rfile', '--route_file', default='route',
                         help='Filename for Route Cache without extension (Default: route)')
 
