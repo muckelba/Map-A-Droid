@@ -5,7 +5,7 @@ import datetime
 import collections
 import datetime
 import time
-from webhook import send_webhook
+from webhook import send_raid_webhook, send_weather_webhook
 from walkerArgs import parseArgs
 import requests
 import shutil
@@ -68,12 +68,12 @@ class RmWrapper:
                 if affected_rows == 1:
                     counter = counter + 1
                     log.debug('Sending auto hatched raid for raid id {0}'.format(row[0]))
-                    send_webhook(row[0],
+                    send_raid_webhook(row[0],
                                  'MON',
-                                 self.dbTimeStringToUnixTimestamp(row[1]),
-                                 self.dbTimeStringToUnixTimestamp(row[2]),
-                                 5,
-                                 mon_id)
+                                      self.dbTimeStringToUnixTimestamp(row[1]),
+                                      self.dbTimeStringToUnixTimestamp(row[2]),
+                                      5,
+                                      mon_id)
                 elif affected_rows > 1:
                     log.error('Something is wrong with the indexing on your table you raids on this id {0}'
                               .format(row[0]))
@@ -404,7 +404,7 @@ class RmWrapper:
                 wh_start += (self.timezone * 60 * 60)
             if wh_end:
                 wh_end += (self.timezone * 60 * 60)
-            send_webhook(gym, 'RAID', wh_start, wh_end, lvl, pkm)
+            send_raid_webhook(gym, 'RAID', wh_start, wh_end, lvl, pkm)
 
         return True
 
@@ -665,6 +665,7 @@ class RmWrapper:
         cursor.execute(query)
         connection.commit()
         cursor.close()
+        send_weather_webhook(s2cellid, weatherid, 0, 0, 2, self.dbTimeStringToUnixTimestamp(int(float(captureTime))))
 
         
 

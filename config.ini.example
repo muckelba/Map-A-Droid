@@ -85,7 +85,7 @@ pogoasset:                   # Path to Pogo Assets: See: https://github.com/ZeCh
 #npFrom:                     # Matching Zoom - Start Value (default: 0.2 (for width = 720px )- or: 0.5 (for width = 1080px ))
 #gym_scan_distance:          # Distance of scanned Gyms (Default: 6km(!!)) - reduce if you scan an area with many gyms at one place
 #weather                     # Detect weather from captured Image and post to database - if your frontend support this!
-#route_file:                 # Filename for Route Cache (Default: route.calc)
+#route_file:                 # Filename for Route Cache without extension (Default: route)
 
 # timezone settings
 ######################
@@ -109,6 +109,7 @@ timezone:                    # Time difference from UTC+-0 (f.e +2 for Berlin/Ge
 
 #webhook                     # active support for webhook
 #webhook_url:                # URL endpoint for your webhook - beginning with http://
+#weather_webhook             # active support for weather webhook
 
 # Auto Hatch
 ######################

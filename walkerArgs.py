@@ -192,7 +192,8 @@ def parseArgs():
                         help='Active webhook support')
     parser.add_argument('-whurl', '--webhook_url', default='',
                         help='URL to receive webhooks')
-
+    parser.add_argument('-wwh', '--weather_webhook', action='store_true', default=False,
+                        help='Active weather webhook support')
     # weather
     parser.add_argument('-w', '--weather', action='store_true', default=False,
                         help='Read weather and post to db - if supported! (Default: False)')
@@ -201,8 +202,8 @@ def parseArgs():
     parser.add_argument('-mmt', '--madmin_time', default='24',
                         help='MADmin clock format (12/24) (Default: 24)')
                         
-    parser.add_argument('-rfile', '--route_file', default='route.calc',
-                        help='Filename for Route Cache (Default: route.calc)')
+    parser.add_argument('-rfile', '--route_file', default='route',
+                        help='Filename for Route Cache without extension (Default: route)')
 
     # Geofences
     parser.add_argument('-gf', '--geofence-file',

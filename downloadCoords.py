@@ -8,7 +8,7 @@ dbWrapper = DbWrapper(str(args.db_method), str(args.dbip), args.dbport, args.dbu
 
 
 def main():
-    if os.path.isfile(args.route_file):
+    if os.path.isfile(args.route_file + '.calc'):
         print("Found existing Route - deleting")
         os.remove(args.route_file)
     if dbWrapper.downloadDbCoords():
