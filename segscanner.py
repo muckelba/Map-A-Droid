@@ -63,7 +63,7 @@ class Scanner:
         unixnow =  time.mktime(zero.timetuple())
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'detectRaidTime: Reading Raidtimer')
         height, width, channel = raidpic.shape
-        raidtimer = raidpic[int(round(radius*2*0.03)+(2*radius)+(radius*2*0.28)):int(round(radius*2*0.03)+(2*radius)+(radius*2*0.43)), 0:width]
+        raidtimer = raidpic[int(round(radius*2*0.03)+(2*radius)+(radius*2*0.265)):int(round(radius*2*0.03)+(2*radius)+(radius*2*0.43)), 0:width]
         raidtimer = cv2.resize(raidtimer, (0,0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
         emptyRaidTempPath = os.path.join(self.tempPath, str(raidNo) + str(hash) + '_emptyraid.png')
         cv2.imwrite(emptyRaidTempPath, raidtimer)
@@ -73,7 +73,7 @@ class Scanner:
         raidtimer = pytesseract.image_to_string(bw, config='--psm 6 --oem 3').replace(' ', '').replace('~','').replace('o','0').replace('O','0').replace('-','').replace('.',':')
         #log.debug(re.match(r'\d\d:\d\d[am|pm]*', raidtimer))
         #cleanup
-        os.remove(emptyRaidTempPath)
+        # os.remove(emptyRaidTempPath)
         raidFound = len(raidtimer) > 0
         if raidFound:
             if ':' in raidtimer:
@@ -422,6 +422,7 @@ class Scanner:
         #get (raidstart, raidend, raidtimer) as (timestamp, timestamp, human-readable hatch)
         raidtimer = self.detectRaidTime(img, hash, raidNo, radius)
         log.debug('[Crop: ' + str(raidNo) + ' (' + str(self.uniqueHash) +') ] ' + 'start_detect: Got raidtime %s' % (str(raidtimer)))
+        return
 
         #first item in tuple stands for raid present in crop or not
         if (not raidtimer[0]):
