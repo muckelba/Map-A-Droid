@@ -639,6 +639,11 @@ def main_thread():
                 i += 1
                 lastRoundEggHatch = False
 
+            # store current position in file
+            posfile = open(args.position_file+'.position', "w")
+            posfile.write(str(curLat)+", "+str(curLng))
+            posfile.close()
+
             log.debug("main: next stop: %s, %s" % (str(curLat), str(curLng)))
             log.debug('main: LastLat: %s, LastLng: %s, CurLat: %s, CurLng: %s' % (lastLat, lastLng, curLat, curLng))
             # get the distance from our current position (last) to the next gym (cur)

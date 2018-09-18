@@ -24,4 +24,5 @@ www_hash/*
 updateGyms.txt
 venv/
 *.calc
+*.position
 geofence.txt

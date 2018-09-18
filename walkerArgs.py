@@ -156,14 +156,14 @@ def parseArgs():
 
     parser.add_argument('-lc', '--last_scanned', action='store_true', default=False,
                         help='Submit last scanned location to RM DB (if supported). Default: False')
-                        
+
     parser.add_argument('-gsd', '--gym_scan_distance', type=int, default=6,
                         help='Search for nearby Gmy within this radius (in KM!!). '
                         'In areas with many Gyms reduce this argument to 1-2 Default: 6')
-                        
+
     parser.add_argument('-npv', '--npValue', type=float, default=0.5,
                         help='Matching zoom max value. (Based on resolution)')
-                        
+
     parser.add_argument('-npf', '--npFrom', type=float, default=0.2,
                         help='Matching zoom start value. (Based on resolution)')
 
@@ -197,17 +197,23 @@ def parseArgs():
     # weather
     parser.add_argument('-w', '--weather', action='store_true', default=False,
                         help='Read weather and post to db - if supported! (Default: False)')
-                        
+
     # MADmin
     parser.add_argument('-mmt', '--madmin_time', default='24',
                         help='MADmin clock format (12/24) (Default: 24)')
-                        
+    
     parser.add_argument('-mmsc', '--madmin_sort', default='6',
                         help='MADmin sort column Raid/Gym (5= Modify / 6 = Create) (Default: 6)')
                     
     parser.add_argument('-mmprt', '--madmin_port', default='5000',
                         help='MADmin web port (Default: 5000)')
-                        
+
+    parser.add_argument('-rfile', '--route_file', default='route',
+                        help='Filename for Route Cache without extension (Default: route)')
+
+    parser.add_argument('-pfile', '--position_file', default='current',
+                        help='Filename for bot\'s current position (Default: current)')
+                     
     parser.add_argument('-rfile', '--route_file', default='route',
                         help='Filename for Route Cache without extension (Default: route)')
 
@@ -221,10 +227,11 @@ def parseArgs():
                               'area. Regarded this as inverted geofence. ' +
                               'Can be combined with geofence-file.'),
                         default='')
+
     # etc
-                        
+
     parser.add_argument('-rdt', '--raid_time', default='45', type=int,
-                        help='Raid Battle time in minutes. (Default: 45)')    
+                        help='Raid Battle time in minutes. (Default: 45)')
 
     # log settings
     parser.add_argument('--no-file-logs',

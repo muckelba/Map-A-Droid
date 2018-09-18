@@ -15,6 +15,7 @@ import re
 import datetime
 from time import gmtime, strftime
 from shutil import copyfile
+from math import ceil, floor
 
 app = Flask(__name__)
 sys.setdefaultencoding('utf8')
@@ -33,7 +34,7 @@ def run_job():
             time.sleep(1)
     except KeyboardInterrupt:
         exit(0)
-            
+
 
     t_webApp = threading.Thread(name='Web App', target=run_job)
     t_webApp.setDaemon(True)
@@ -66,55 +67,59 @@ def gyms():
 def unknown():
     return render_template('unknown.html')
 
+@app.route('/map', methods=['GET'])
+def map():
+    return render_template('map.html')
+
 @app.route("/submit_hash")
 def submit_hash():
     hash = request.args.get('hash')
     id = request.args.get('id')
-    
+
     if dbWrapper.insertHash(hash, 'gym', id, '999'):
-        
+
         for file in glob.glob("www_hash/unkgym_*" + str(hash) + ".jpg"):
             copyfile(file, 'www_hash/gym_0_0_' + str(hash) + '.jpg')
             os.remove(file)
-            
+
         return redirect("/unknown", code=302)
-        
+
 @app.route("/modify_raid_gym")
 def modify_raid_gym():
     hash = request.args.get('hash')
     id = request.args.get('id')
     mon = request.args.get('mon')
     lvl = request.args.get('lvl')
-    
+
     newJsonString = encodeHashJson(id, lvl, mon)
     dbWrapper.deleteHashTable('"' + str(hash) + '"', 'raid', 'in', 'hash')
     dbWrapper.insertHash(hash, 'raid', newJsonString, '999')
-    
+
     return redirect("/raids", code=302)
-    
+
 @app.route("/modify_raid_mon")
 def modify_raid_mon():
     hash = request.args.get('hash')
     id = request.args.get('gym')
     mon = request.args.get('mon')
     lvl = request.args.get('lvl')
-    
+
     newJsonString = encodeHashJson(id, lvl, mon)
     dbWrapper.deleteHashTable('"' + str(hash) + '"', 'raid', 'in', 'hash')
     dbWrapper.insertHash(hash, 'raid', newJsonString, '999')
-    
+
     return redirect("/raids", code=302)
 
 @app.route("/modify_gym_hash")
 def modify_gym_hash():
     hash = request.args.get('hash')
     id = request.args.get('id')
-    
+
     dbWrapper.deleteHashTable('"' + str(hash) + '"', 'gym', 'in', 'hash')
     dbWrapper.insertHash(hash, 'gym', id, '999')
-    
+
     return redirect("/gyms", code=302)
-  
+
 @app.route("/near_gym")
 def near_gym():
     nearGym = []
@@ -126,29 +131,29 @@ def near_gym():
         return 'Missing Argument...'
     closestGymIds = dbWrapper.getNearGyms(lat, lon, 123, 1, args.gym_scan_distance+5)
     for closegym in closestGymIds:
-        
+
         gymid = str(closegym[0])
         dist = str(closegym[1])
         gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
-        
+
         name = 'unknown'
         lat = '0'
         lon = '0'
         url = '0'
         description = ''
-        
+
         if str(gymid) in data:
             name = data[str(gymid)]["name"].replace("\\", r"\\").replace('"', '')
             lat = data[str(gymid)]["latitude"]
             lon = data[str(gymid)]["longitude"]
             if data[str(gymid)]["description"]:
                 description = data[str(gymid)]["description"].replace("\\", r"\\").replace('"', '').replace("\n", "")
-        
+
         ngjson = ({'id': gymid, 'dist': dist, 'name': name, 'lat': lat, 'lon': lon, 'description': description, 'filename': gymImage, 'dist': dist})
         nearGym.append(ngjson)
- 
+
     return jsonify(nearGym)
-    
+
 @app.route("/delete_hash")
 def delete_hash():
     nearGym = []
@@ -157,11 +162,11 @@ def delete_hash():
     redi = request.args.get('redirect')
     if not hash or not type:
         return 'Missing Argument...'
-        
+
     dbWrapper.deleteHashTable('"' + str(hash) + '"', type, 'in', 'hash')
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
         os.remove(file)
- 
+
     return redirect('/' + str(redi), code=302)
 
 @app.route("/delete_file")
@@ -172,10 +177,10 @@ def delete_file():
     redi = request.args.get('redirect')
     if not hash or not type:
         return 'Missing Argument...'
-        
+
     for file in glob.glob("www_hash/*" + str(hash) + ".jpg"):
         os.remove(file)
- 
+
     return redirect('/' + str(redi), code=302)
 
 
@@ -184,21 +189,21 @@ def get_gyms():
     gyms = []
     with open('gym_info.json') as f:
         data = json.load(f)
-        
+
     hashdata = json.loads(getAllHash('gym'))
-        
+
     for file in glob.glob("www_hash/gym_*.jpg"):
         unkfile = re.search('gym_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
-        
+
         if str(hashvalue) in hashdata:
-        
+
             gymid =  hashdata[str(hashvalue)]["id"]
             count = hashdata[hashvalue]["count"]
             modify = hashdata[hashvalue]["modify"]
 
             creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-            
+
             if args.madmin_time == "12":
                 creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
                 modify = datetime.datetime.strptime(modify, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
@@ -208,7 +213,7 @@ def get_gyms():
             lon = '0'
             url = '0'
             description = ''
-        
+
             gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
 
             if str(gymid) in data:
@@ -220,12 +225,12 @@ def get_gyms():
 
             gymJson = ({'id': gymid, 'lat': lat, 'lon': lon, 'hashvalue': hashvalue, 'filename': file, 'name': name, 'description': description, 'gymimage': gymImage, 'count': count, 'creation': creationdate, 'modify': modify })
             gyms.append(gymJson)
-            
+
         else:
             print "File: " + str(file) + " not found in Database"
             continue
 
-    return jsonify(gyms)     
+    return jsonify(gyms)
 
 @app.route("/get_raids")
 def get_raids():
@@ -233,30 +238,30 @@ def get_raids():
     eggIdsByLevel = [1, 1, 2, 2, 3]
     with open('gym_info.json') as f:
         data = json.load(f)
-        
+
     with open('pokemon.json') as f:
         mondata = json.load(f)
-        
+
     hashdata = json.loads(getAllHash('raid'))
-    
+
     for file in glob.glob("www_hash/raid_*.jpg"):
         unkfile = re.search('raid_(-?\d+)_(-?\d+)_((?s).*)\.jpg', file)
         hashvalue = (unkfile.group(3))
-        
+
         if str(hashvalue) in hashdata:
             monName = 'unknown'
             raidjson =  hashdata[str(hashvalue)]["id"]
             count = hashdata[hashvalue]["count"]
             modify = hashdata[hashvalue]["modify"]
-        
+
             raidHash_ = decodeHashJson(raidjson)
             gymid = raidHash_[0]
             lvl = raidHash_[1]
             mon = int(raidHash_[2])
             monid = int(raidHash_[2])
             mon = "%03d"%mon
-            
-        
+
+
             if mon == '000':
                 type = 'egg'
                 monPic = ''
@@ -265,7 +270,7 @@ def get_raids():
                 monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
                 if str(monid) in mondata:
                     monName = mondata[str(monid)]["name"]
-            
+
             eggId = eggIdsByLevel[int(lvl) - 1]
             if eggId == 1:
                 eggPic = '/asset/static_assets/png/ic_raid_egg_normal.png'
@@ -275,7 +280,7 @@ def get_raids():
                 eggPic = '/asset/static_assets/png/ic_raid_egg_legendary.png'
 
             creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-            
+
             if args.madmin_time == "12":
                 creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
                 modify = datetime.datetime.strptime(modify, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
@@ -285,7 +290,7 @@ def get_raids():
             lon = '0'
             url = '0'
             description = ''
-        
+
             gymImage = 'gym_img/_' + str(gymid)+ '_.jpg'
 
             if str(gymid) in data:
@@ -301,47 +306,47 @@ def get_raids():
             print "File: " + str(file) + " not found in Database"
             continue
 
-    return jsonify(raids) 
+    return jsonify(raids)
 
 @app.route("/get_mons")
 def get_mons():
     mons = []
-    
-        
+
+
     with open('pokemon.json') as f:
         mondata = json.load(f)
-    
+
     for file in glob.glob(os.path.join(args.pogoasset, str('pokemon_icons/pokemon_icon_*_00.png'))):
         unkfile = re.search('pokemon_icon_(-?\d+)', file)
         mon = (unkfile.group(1))
         monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
         monName = 'unknown'
         monid = int(mon)
-        
+
         if str(monid) in mondata:
             monName = mondata[str(monid)]["name"]
-        
+
         monJson = ({'filename': monPic, 'mon': monid, 'name': monName })
         mons.append(monJson)
 
 
-    return jsonify(mons) 
+    return jsonify(mons)
 
 @app.route("/get_screens")
 def get_screens():
     screens = []
-    
+
     for file in glob.glob("screenshots/raidscreen_*.png"):
         creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
-        
+
         if args.madmin_time == "12":
             creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
-            
+
         screenJson = ({'filename': file, 'creation': creationdate })
         screens.append(screenJson)
 
 
-    return jsonify(screens) 
+    return jsonify(screens)
 
 @app.route("/get_unknows")
 def get_unknows():
@@ -352,14 +357,63 @@ def get_unknows():
         lat = (unkfile.group(1))
         lon = (unkfile.group(2))
         hashvalue = (unkfile.group(3))
-        
+
         if args.madmin_time == "12":
             creationdate = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%d %I:%M:%S %p')
-        
+
         hashJson = ({'lat': lat, 'lon': lon,'hashvalue': hashvalue, 'filename': file, 'creation': creationdate})
         unk.append(hashJson)
 
-    return jsonify(unk)   
+    return jsonify(unk)
+
+
+@app.route("/get_position")
+def get_position():
+    fileName = args.position_file+'.position'
+
+    if not os.path.isfile(fileName):
+        return jsonify([0, 0])
+
+    with open(fileName) as f:
+        latlon = f.read().strip().split(', ')
+        if len(latlon) == 2:
+            return jsonify([getCoordFloat(latlon[0]), getCoordFloat(latlon[1])])
+        else:
+            return jsonify([0, 0])
+
+
+@app.route("/get_route")
+def get_route():
+    route = []
+
+    with open(args.route_file+'.calc') as f:
+        for line in f.readlines():
+            latlon = line.strip().split(', ')
+            route.append([
+                getCoordFloat(latlon[0]),
+                getCoordFloat(latlon[1])
+            ])
+
+    return jsonify(route)
+
+@app.route("/get_gymcoords")
+def get_gymcoords():
+    coords = []
+
+    with open('gym_info.json') as f:
+        data = json.load(f)
+
+        for gymid in data:
+            gym = data[str(gymid)]
+            coords.append({
+                'id': gymid,
+                'name': gym['name'],
+                'img': gym['url'],
+                'lat': gym['latitude'],
+                'lon': gym['longitude']
+                })
+
+    return jsonify(coords)
 
 @app.route('/gym_img/<path:path>', methods=['GET'])
 def pushGyms(path):
@@ -368,18 +422,18 @@ def pushGyms(path):
 @app.route('/www_hash/<path:path>', methods=['GET'])
 def pushHashes(path):
     return send_from_directory('www_hash', path)
-    
+
 @app.route('/screenshots/<path:path>', methods=['GET'])
 def pushScreens(path):
     return send_from_directory('screenshots', path)
-    
+
 @app.route('/match_unknows', methods=['GET'])
 def match_unknows():
     hash = request.args.get('hash')
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     return render_template('match_unknown.html', hash = hash, lat = lat, lon = lon)
-    
+
 @app.route('/modify_raid', methods=['GET'])
 def modify_raid():
     hash = request.args.get('hash')
@@ -395,17 +449,17 @@ def modify_gym():
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     return render_template('change_gym.html', hash = hash, lat = lat, lon = lon)
-    
+
 @app.route('/modify_mon', methods=['GET'])
 def modify_mon():
     hash = request.args.get('hash')
     gym = request.args.get('gym')
     lvl = request.args.get('lvl')
     return render_template('change_mon.html', hash = hash, gym = gym, lvl = lvl)
-  
+
 @app.route('/asset/<path:path>', methods=['GET'])
 def pushAssets(path):
-    return send_from_directory(args.pogoasset, path)    
+    return send_from_directory(args.pogoasset, path)
 
 
 def decodeHashJson(hashJson):
@@ -415,11 +469,11 @@ def decodeHashJson(hashJson):
     raidMon = data["mon"]
 
     return raidGym, raidLvl, raidMon
-    
+
 def encodeHashJson(gym, lvl, mon):
     hashJson = json.dumps({'gym': gym, 'lvl': lvl, 'mon': mon}, separators=(',',':'))
     return hashJson
-    
+
 def getAllHash(type):
    rv = dbWrapper.getAllHash(type)
    hashRes = {}
@@ -428,6 +482,9 @@ def getAllHash(type):
    #data_json = json.dumps(hashRes, sort_keys=True, indent=4, separators=(',', ': '))
    data_json = hashRes
    return json.dumps(hashRes, indent=4, sort_keys=True)
+
+def getCoordFloat(coordinate):
+    return floor(float(coordinate) * (10 ** 5)) / float(10 ** 5)
 
 def creation_date(path_to_file):
     """
@@ -445,7 +502,8 @@ def creation_date(path_to_file):
             # We're probably on Linux. No easy way to get creation dates here,
             # so we'll settle for when its content was last modified.
             return stat.st_mtime
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=args.madmin_port, threaded=True)
 
-    

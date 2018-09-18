@@ -86,6 +86,7 @@ pogoasset:                   # Path to Pogo Assets: See: https://github.com/ZeCh
 #gym_scan_distance:          # Distance of scanned Gyms (Default: 6km(!!)) - reduce if you scan an area with many gyms at one place
 #weather                     # Detect weather from captured Image and post to database - if your frontend support this!
 #route_file:                 # Filename for Route Cache without extension (Default: route)
+#position_file:              # Filename for the bot's current position (Default: current)
 
 # MADmin
 ######################
