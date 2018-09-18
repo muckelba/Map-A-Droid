@@ -213,9 +213,6 @@ def parseArgs():
 
     parser.add_argument('-pfile', '--position_file', default='current',
                         help='Filename for bot\'s current position (Default: current)')
-                     
-    parser.add_argument('-rfile', '--route_file', default='route',
-                        help='Filename for Route Cache without extension (Default: route)')
 
     # Geofences
     parser.add_argument('-gf', '--geofence-file',
