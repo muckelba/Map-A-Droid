@@ -644,6 +644,8 @@ class RmWrapper:
         now_timezone = datetime.datetime.fromtimestamp(float(captureTime))
         now_timezone = time.mktime(now_timezone.timetuple()) - (self.timezone * 60 * 60)
         s2cellid = S2Helper.latLngToCellId(lat, lng)
+        realLat, realLng = S2Helper.middleOfCell(s2cellid)
+        
         try:
             connection = mysql.connector.connect(host=self.host,
                                                  user=self.user, port=self.port, passwd=self.password,
@@ -658,8 +660,8 @@ class RmWrapper:
                 'wind_level, snow_level, fog_level, wind_direction, gameplay_weather, ' +
                 'severity, warn_weather, world_time, last_updated) VALUES ' + 
                 ' (' + str(s2cellid) + ', ' + str(lat) + ', ' + str(lng) + ', NULL, NULL, NULL, NULL, NULL, NULL, ' +
-                '' + str(weatherid) + ', NULL, NULL, ' + str(args.timezone) + ', FROM_UNIXTIME(\'' + str(now_timezone) + '\'))' + 
-                ' ON DUPLICATE KEY UPDATE fog_level=0, cloud_level=0, snow_level=0, wind_direction=0, world_time=' + str(args.timezone) + ', ' + 
+                '' + str(weatherid) + ', NULL, NULL, 1, FROM_UNIXTIME(\'' + str(now_timezone) + '\'))' + 
+                ' ON DUPLICATE KEY UPDATE fog_level=0, cloud_level=0, snow_level=0, wind_direction=0, world_time=0, latitude=' + str(realLat) + ', longitude=' + str(realLng) + '' + 
                 ' gameplay_weather=' + str(weatherid) + ', last_updated=FROM_UNIXTIME(\'' + str(now_timezone) + '\')')
 
         cursor.execute(query)
