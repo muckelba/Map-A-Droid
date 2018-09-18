@@ -57,6 +57,7 @@ def mon_image_matching(url_img_name, fort_img_name, raidNo, hash):
         (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
         
         (endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
+        print endY, endX
         if endY < height_f/2 or endX < width_f/2 or endY > height_f/2+height_f/2*0.4 or endY < height_f/2+height_f/2*0.3:
             maxVal = 0.0
         
