@@ -505,5 +505,5 @@ def creation_date(path_to_file):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=args.madmin_port, threaded=True)
+    app.run(host='0.0.0.0', port=int(args.madmin_port), threaded=True)
 
