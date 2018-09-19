@@ -259,10 +259,10 @@ class PogoWindows:
         edges = cv2.Canny(gray, 100, 200, apertureSize=3)
         #checking for all possible button lines
         
-        if _widthold <= 1080:
-            maxLineLength = (width / ratiomin) + (width*0.02)
-        else:
+        if _widthold > 1080 or _widthold <=720:
             maxLineLength = (width / ratiomin) + (width*0.165)
+        else:
+            maxLineLength = (width / ratiomin) + (width*0.02)
             
         log.debug("lookForButton: MaxLineLength:" + str(maxLineLength))
         minLineLength = (width / ratiomax) - (width*0.02)
