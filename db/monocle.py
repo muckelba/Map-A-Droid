@@ -710,8 +710,8 @@ class MonocleWrapper:
         cursor.execute(query)
         file = open(args.file, 'w')
         listOfCoords = []
-        for (latitude, longitude) in cursor:
-            listOfCoords.append([latitude, longitude])
+        for (lat, lon) in cursor:
+            listOfCoords.append([lat, lon])
         cursor.close()
         connection.close()
         geofenceHelper = GeofenceHelper()
