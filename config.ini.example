@@ -108,6 +108,8 @@ timezone:                    # Time difference from UTC+-0 (f.e +2 for Berlin/Ge
 # params for downloadDBCords.py (generate coordfile from param file)
 ######################
 
+#geofence-file:                 # Geofence file to define outer borders of the scan area.
+#geofence-excluded-file:        # File to define forbidden areas inside scan area. Regarded this as inverted geofence. Can be combined with geofence-file.
 #latlngleft:                 # download gym cords from this param f.e. [47.1, 47.2]
 #latlngright:                # download gym cords to this param  f.e. [9.1, 9.5]
 
