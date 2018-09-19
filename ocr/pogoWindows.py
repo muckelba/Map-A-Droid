@@ -344,7 +344,7 @@ class PogoWindows:
         log.debug("__checkRaidLine: MinLineLength:" + str(minLineLength))
         maxLineGap = 50
         
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength, maxLineGap)
+        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 50, 100, minLineLength, maxLineGap)
         if lines is None:
             return False
         for line in lines:
