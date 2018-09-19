@@ -157,7 +157,7 @@ def parseArgs():
     parser.add_argument('-lc', '--last_scanned', action='store_true', default=False,
                         help='Submit last scanned location to RM DB (if supported). Default: False')
 
-    parser.add_argument('-gsd', '--gym_scan_distance', type=int, default=6,
+    parser.add_argument('-gsd', '--gym_scan_distance', type=float, default=6.0,
                         help='Search for nearby Gmy within this radius (in KM!!). '
                         'In areas with many Gyms reduce this argument to 1-2 Default: 6')
 
