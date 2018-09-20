@@ -763,11 +763,12 @@ def dhash(image, hash_size=8):
 
 
 def getImageHash(image, hashSize=8):
-    
+    time.sleep(2)
     try:
         image_temp = cv2.imread(image)
-    except:
+    except Exception as e:
         log.error("Screenshot corrupted :(")
+        log.debug(e)
         return '0'
     if image_temp is None:
         log.error("Screenshot corrupted :(")
