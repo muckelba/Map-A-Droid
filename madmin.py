@@ -16,6 +16,8 @@ import datetime
 from time import gmtime, strftime
 from shutil import copyfile
 from math import ceil, floor
+import mysql
+import mysql.connector
 
 app = Flask(__name__)
 sys.setdefaultencoding('utf8')
@@ -46,6 +48,65 @@ def after_request(response):
   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   return response
+
+@app.route('/live', methods=['POST'])
+def live():
+    
+    
+
+    try:
+        data = json.loads(request.data)
+        for pokemon in data['pokemon']:   
+                print pokemon['type']
+                print pokemon['lat']
+                print pokemon['lon']
+                print str(pokemon['despawn_time'])[:-3]
+                print pokemon['spawn_id']
+                print pokemon['gender']
+                print pokemon['id']
+                print pokemon['weather']
+                
+                submitmon(str(pokemon['id']), str(pokemon['type']), str(pokemon['lat']), str(pokemon['lon']), str(pokemon['despawn_time'])[:-3], str(pokemon['spawn_id']), pokemon['gender'], pokemon['weather'])
+                
+                
+                
+                
+                
+        
+    except:
+        return "Json Error"
+
+    #Do Something with Data :)
+    return "Success"
+
+def submitmon(id, type, lat, lon, desptime, spawnid, gender, weather):
+    print 'Submit'
+    despawn_time = (datetime.datetime.fromtimestamp(float(desptime)) - datetime.timedelta(hours=args.timezone)).strftime(
+        "%Y-%m-%d %H:%M:%S")
+        
+    now = (datetime.datetime.now() - datetime.timedelta(hours=args.timezone)).strftime("%Y-%m-%d %H:%M:%S")
+    
+    
+    connection = mysql.connector.connect(host=args.dbip,
+                                             user=args.dbusername, port=args.dbport, passwd=args.dbpassword,
+                                             db=args.dbname)
+    
+    cursor = connection.cursor()
+    
+    query = ('INSERT INTO pokemon (encounter_id, spawnpoint_id, pokemon_id, latitude, longitude, disappear_time, ' +
+    'individual_attack, individual_defense, individual_stamina, move_1, move_2, cp, cp_multiplier, weight, height, ' +
+    'gender, form, costume, catch_prob_1, catch_prob_2, catch_prob_3, rating_attack, rating_defense, weather_boosted_condition, ' +
+    'last_modified) VALUES ' + 
+    '(' + str(id) + ', \'' + str(spawnid) + '\', ' + str(type) + ', ' + str(lat) + ', ' + str(lon) + ', \'' + str(despawn_time) + '\', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ' + str(gender) + ', NULL, ' + 
+    'NULL, NULL, NULL, NULL, NULL, NULL, ' + str(weather) + ', \'' + str(now) + '\')' +
+    ' ON DUPLICATE KEY UPDATE  last_modified=\'' + str(now) + '\'')
+    
+    print query
+
+    cursor.execute(query)
+    connection.commit()
+    cursor.close()
+    return
 
 @app.route('/screens', methods=['GET'])
 def screens():
