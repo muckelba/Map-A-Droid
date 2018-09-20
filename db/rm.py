@@ -717,10 +717,10 @@ class RmWrapper:
         llr = args.latlngright
         queryStr = ""
         if lll and llr:
-            queryStr = ' where (latitude BETWEEN {} AND {}) AND (longitude BETWEEN {} AND {}) and latitude<>Null and longitude<>Null'.format(lll[0], llr[0],
+            queryStr = ' where (latitude BETWEEN {} AND {}) AND (longitude BETWEEN {} AND {}) and latitude IS NOT NULL and longitude IS NOT NULL'.format(lll[0], llr[0],
                                                                                                       lll[1], llr[1])
         else:
-            queryStr = ' where latitude<>Null and longitude<>Null'                                                                            
+            queryStr = ' where latitude IS NOT NULL and longitude IS NOT NULL'                                                                            
         query = "SELECT latitude, longitude FROM gym {}".format(queryStr)
         cursor = connection.cursor()
         cursor.execute(query)

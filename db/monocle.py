@@ -703,10 +703,10 @@ class MonocleWrapper:
         llr = args.latlngright
         queryStr = ""
         if lll and llr:
-            queryStr = ' where (lat BETWEEN {} AND {}) AND (lon BETWEEN {} AND {}) and lat<>Null and lon<>Null'.format(lll[0], llr[0], lll[1],
+            queryStr = ' where (lat BETWEEN {} AND {}) AND (lon BETWEEN {} AND {}) and lat IS NOT NULL and lon IS NOT NULL'.format(lll[0], llr[0], lll[1],
                                                                                            llr[1])
         else:
-            queryStr = ' where lat<>Null and lon<>Null'
+            queryStr = ' where lat IS NOT NULL and lon IS NOT NULL'
         query = "SELECT lat, lon FROM forts {}".format(queryStr)
         cursor = connection.cursor()
         cursor.execute(query)
