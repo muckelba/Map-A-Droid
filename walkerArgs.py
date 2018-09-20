@@ -208,9 +208,6 @@ def parseArgs():
     parser.add_argument('-mmprt', '--madmin_port', default='5000',
                         help='MADmin web port (Default: 5000)')
 
-    parser.add_argument('-rfile', '--route_file', default='route',
-                        help='Filename for Route Cache without extension (Default: route)')
-
     parser.add_argument('-pfile', '--position_file', default='current',
                         help='Filename for bot\'s current position (Default: current)')
 
@@ -254,6 +251,9 @@ def parseArgs():
 
     parser.add_argument('-ahn', '--auto_hatch_number', type=int, default=0,
                         help='Auto hatch of level 5 Pokemon ID')
+
+    parser.add_argument('--no_initial_restart', default=False,
+                        help='Disable automatic PoGo restart when walker initially starts. NOT recommended.')
 
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v',
