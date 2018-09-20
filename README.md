@@ -31,8 +31,8 @@ The Raid Mapper is a Raid scanner for Pokemon GO, based on Android devices and O
 
 ## Some (but not limiting) examples of phones working with the project:
 * Redmi 5A (annoying to setup) running LineageOS 15.1
-* Samsung S5 running LOS 15.1
-* Motorola G4
+* Samsung S5(+) running LOS 15.1
+* Motorola G4 running LineageOS 15.1
 * HTC One M7 running LOS 14.1
 * Samsung XCover 4 running stock Android 7.1.2
 
@@ -52,6 +52,9 @@ Make sure you're in the directory of Map-A-Droid and run:
 
 *Depending on your OS, you may need to install the following:*
 #### Ubuntu/Debian
+Ubuntu/Debian, run `apt install tesseract-ocr python-opencv`
+
+If you do not get OpenCV 3.0 or above:
 Run the shell from [here](https://github.com/milq/milq/blob/master/scripts/bash/install-opencv.sh)
 
 > If face issues with the shell sceript ensure that Open JDK has installed correctly and try and running lines 57-70 individually and on line 67 run just `cmake` without the paramters.
