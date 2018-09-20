@@ -59,7 +59,7 @@
 		   $("table").addClass("table");
 		   $('table').DataTable( {
 		           "order": [[ 2, "desc" ]],
-			       responsive: true,
+			       responsive: {{ responsive }},
 			       "autoWidth": true,
 			       columnDefs: [{ targets: [2], type: 'date'}]
 		       } );

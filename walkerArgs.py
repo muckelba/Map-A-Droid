@@ -208,6 +208,9 @@ def parseArgs():
     parser.add_argument('-mmprt', '--madmin_port', default='5000',
                         help='MADmin web port (Default: 5000)')
 
+    parser.add_argument('-mmnrsp', '--madmin_noresponsive', action='store_false', default=True,
+                        help='MADmin deactivate responsive tables')
+
     parser.add_argument('-rfile', '--route_file', default='route',
                         help='Filename for Route Cache without extension (Default: route)')
 

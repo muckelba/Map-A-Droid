@@ -50,7 +50,7 @@
 		   $("table").addClass("table");
 		   $('table').DataTable( {
 		           "order": [[ 4, "desc" ]],
-			       responsive: true,
+			       responsive: {{ responsive }},
 			       columnDefs: [{ targets: [4], type: 'date'}]
 		       } );
 		   }
