@@ -679,7 +679,7 @@ class MonocleWrapper:
                  "VALUES ({0}, {1}, {2}, {3}, {4}, {5}) "
                  "ON DUPLICATE KEY UPDATE `condition`={1}, alert_severity={2}, warn = {3}, day={4}, updated={5}"
                  .format(s2cellid, weatherid, 0, 0, 2, int(float(captureTime))))
-        log.error(query)
+
         cursor.execute(query)
         connection.commit()
         cursor.close()
