@@ -5,7 +5,7 @@ import logging
 import time
 from flask import (Flask, abort, jsonify, render_template,
                    request, make_response,
-                   send_from_directory, send_file, redirect)
+                   send_from_directory, send_file, redirect, current_app)
 from walkerArgs import parseArgs
 from db.dbWrapper import DbWrapper
 import sys
@@ -30,6 +30,9 @@ dbWrapper = DbWrapper(str(args.db_method), str(args.dbip), args.dbport, args.dbu
                       args.timezone)
 
 
+#@app.before_first_request
+#def init():
+#    task = my_task.apply_async()
 def run_job():
     try:
         while True:
@@ -41,7 +44,7 @@ def run_job():
     t_webApp = threading.Thread(name='Web App', target=run_job)
     t_webApp.setDaemon(True)
     t_webApp.start()
-
+        
 @app.after_request
 def after_request(response):
   response.headers.add('Access-Control-Allow-Origin', '*')
@@ -129,9 +132,16 @@ def near_gym():
         data = json.load(f)
     lat = request.args.get('lat')
     lon = request.args.get('lon')
+    if lat == "9999":
+        distance = int(9999)
+        lat = args.home_lat
+        lon = args.home_lng
+    else:
+        distance = int(args.gym_scan_distance)+5
+    
     if not lat or not lon:
         return 'Missing Argument...'
-    closestGymIds = dbWrapper.getNearGyms(lat, lon, 123, 1, args.gym_scan_distance+5)
+    closestGymIds = dbWrapper.getNearGyms(lat, lon, 123, 1, int(distance))
     for closegym in closestGymIds:
 
         gymid = str(closegym[0])
@@ -230,6 +240,7 @@ def get_gyms():
 
         else:
             print "File: " + str(file) + " not found in Database"
+            os.remove(str(file))
             continue
 
     return jsonify(gyms)
@@ -306,6 +317,7 @@ def get_raids():
             raids.append(raidJson)
         else:
             print "File: " + str(file) + " not found in Database"
+            os.remove(str(file))
             continue
 
     return jsonify(raids)
@@ -313,26 +325,37 @@ def get_raids():
 @app.route("/get_mons")
 def get_mons():
     mons = []
-
-
+    monList =[]
+    
     with open('pokemon.json') as f:
         mondata = json.load(f)
+    
+    with open('raidmons.json') as f:
+        raidmon = json.load(f)
+    
+    for mons in raidmon:
+        for mon in mons['DexID']:
+            lvl = mons['Level']
+            if str(mon).find("_") > -1:
+                mon_split = str(mon).split("_")
+                mon = mon_split[0]
+                frmadd = mon_split[1] 
+            else:
+                frmadd = "00"
 
-    for file in glob.glob(os.path.join(args.pogoasset, str('pokemon_icons/pokemon_icon_*_00.png'))):
-        unkfile = re.search('pokemon_icon_(-?\d+)', file)
-        mon = (unkfile.group(1))
-        monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
-        monName = 'unknown'
-        monid = int(mon)
-
-        if str(monid) in mondata:
-            monName = mondata[str(monid)]["name"]
-
-        monJson = ({'filename': monPic, 'mon': monid, 'name': monName })
-        mons.append(monJson)
-
-
-    return jsonify(mons)
+            mon = '{:03d}'.format(int(mon))
+            
+            monPic = '/asset/pokemon_icons/pokemon_icon_' + mon + '_00.png'
+            monName = 'unknown'
+            monid = int(mon)
+            
+            if str(monid) in mondata:
+                monName = mondata[str(monid)]["name"]
+            
+            monJson = ({'filename': monPic, 'mon': monid, 'name': monName, 'lvl': lvl })
+            monList.append(monJson)
+            
+    return jsonify(monList)
 
 @app.route("/get_screens")
 def get_screens():
@@ -354,7 +377,7 @@ def get_screens():
 def get_unknows():
     unk = []
     for file in glob.glob("www_hash/unkgym_*.jpg"):
-        unkfile = re.search('unkgym_(-?\d+\.\d+)_(-?\d+\.\d+)_((?s).*)\.jpg', file)
+        unkfile = re.search('unkgym_(-?\d+\.?\d+)_(-?\d+\.?\d+)_((?s).*)\.jpg', file)
         creationdate = datetime.datetime.fromtimestamp(creation_date(file)).strftime('%Y-%m-%d %H:%M:%S')
         lat = (unkfile.group(1))
         lon = (unkfile.group(2))
@@ -505,7 +528,7 @@ def creation_date(path_to_file):
             # so we'll settle for when its content was last modified.
             return stat.st_mtime
 
-
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(args.madmin_port), threaded=True)
+    app.run()
+    #host='0.0.0.0', port=int(args.madmin_port), threaded=False)
 

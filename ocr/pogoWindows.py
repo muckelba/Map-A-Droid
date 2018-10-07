@@ -16,6 +16,7 @@ from screenWrapper import ScreenWrapper
 import collections
 import re
 import time
+import math
 
 import sys
 
@@ -251,33 +252,29 @@ class PogoWindows:
         log.debug("lookForButton: Determined screenshot scale: " + str(height) + " x " + str(width))
         
         # resize for better line quality
-        gray = cv2.resize(gray, (0,0), fx=width*0.001, fy=width*0.001)
+        #gray = cv2.resize(gray, (0,0), fx=width*0.001, fy=width*0.001)
         height, width = gray.shape
         faktor =  width / _widthold
         
         gray = cv2.GaussianBlur(gray, (3, 3), 0)
-        edges = cv2.Canny(gray, 100, 200, apertureSize=3)
+        edges = cv2.Canny(gray, 50, 200, apertureSize=3)
         #checking for all possible button lines
         
-        if _widthold > 1080 or _widthold <=720:
-            maxLineLength = (width / ratiomin) + (width*0.165)
-        else:
-            maxLineLength = (width / ratiomin) + (width*0.02)
-            
+        maxLineLength = (width / ratiomin) + (width*0.18)
         log.debug("lookForButton: MaxLineLength:" + str(maxLineLength))
         minLineLength = (width / ratiomax) - (width*0.02)
         log.debug("lookForButton: MinLineLength:" + str(minLineLength))
 
         
-        kernel = np.ones((4,4),np.uint8)
-        edges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel)
+        kernel = np.ones((2,2),np.uint8)
+        edges = cv2.morphologyEx(edges, cv2.MORPH_GRADIENT, kernel)
         
         maxLineGap = 50
         lineCount = 0
         lines = []
         _x = 0
         _y = height
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 160, maxLineGap, minLineLength)
+        lines = cv2.HoughLinesP(edges, rho = 1, theta = math.pi / 180, threshold = 70, minLineLength = minLineLength, maxLineGap = 2)
         if lines is None:
             return False
 
@@ -298,7 +295,7 @@ class PogoWindows:
                     log.debug("lookForButton: Found Buttonline Nr. " + str(lineCount) + " - Line lenght: " + str(
                         x2 - x1) + "px Coords - X: " + str(x1) + " " + str(x2) + " Y: " + str(y1) + " " + str(y2))
 
-        if lineCount >= 1 and lineCount < 4:
+        if lineCount > 1 and lineCount <= 6:
             
             #recalculate click area for real resolution
             click_x = int(((width - _x2) + ((_x2 - _x1) /2)) / round(faktor,2)) 
@@ -308,9 +305,9 @@ class PogoWindows:
             time.sleep(4)
             return True
             
-        elif lineCount > 4:
+        elif lineCount > 6:
             log.debug('lookForButton: found to much Buttons :) - close it' )
-            self.screenWrapper.backButton()
+            self.screenWrapper.click(int(width - ( width / 7.2)), int(height - ( height / 12.19)))
             time.sleep(4)
                 
             return True
@@ -331,6 +328,12 @@ class PogoWindows:
         if screenshotRead is None:
             log.error("Screenshot corrupted :(")
             return False
+            
+        if self.__readCircleCount(os.path.join('', filename), hash, float(11), xcord=False, crop=True, click=False, canny=True) == -1:
+            log.debug("__checkRaidLine: Not active")
+            return False
+            
+            
         height, width, _ = screenshotRead.shape
         screenshotRead = screenshotRead[int(height / 2) - int(height / 3):int(height / 2) + int(height / 3),
                          int(0):int(width)]
@@ -344,7 +347,7 @@ class PogoWindows:
         log.debug("__checkRaidLine: MinLineLength:" + str(minLineLength))
         maxLineGap = 50
         
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 50, 100, minLineLength, maxLineGap)
+        lines = cv2.HoughLinesP(edges, rho = 1, theta = math.pi / 180, threshold = 70, minLineLength = minLineLength, maxLineGap = 2)
         if lines is None:
             return False
         for line in lines:
