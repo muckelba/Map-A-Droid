@@ -92,7 +92,7 @@ brew install tesseract --all-languages
 You will need a MySQL server installed:  
 * (Tutorial from RocketMap) [Installing MySQL](https://rocketmap.readthedocs.io/en/develop/basic-install/mysql.html)
 
-You will also need to create the `trshash` table using the following query
+A new table, called `trshash` will be created at the first run. You can create it manually using the following query:
 ```sql
 Create table if not exists trshash (
 hashid MEDIUMINT NOT NULL AUTO_INCREMENT,
@@ -143,7 +143,7 @@ INSERT, UPDATE, DELETE, and SELECT!
     * Select MediaProjection to allow touch commands  
 </br>
 
-2. PC - Make sure you're in the directory of Map-A-Droid and run the following 2 commands 
+2. PC - Make sure you're in the directory of Map-A-Droid and run the following 2 commands
 
 To start the GPS walking around
 `python startWalker.py -os`
@@ -154,6 +154,13 @@ To start the processing of the screenshot that have been taken
 Best practice is to run both commands in seperate [screen](https://www.gnu.org/software/screen/) sessions.
 
 >Note if running via ssh you may face issues around "no screen available" to get around the prefix your commands with `MPLBACKEND=Agg`
+
+
+### MADmin
+MADmin is a webfrontend to check scanned gyms and raids, fix unknown gyms and pokemon. You can see the generated route and the current position of the smartphone.
+
+Start it with `python startWalker.py -wm`.
+It will run at http://0.0.0.0:5000/ by default, but the port is configurable in the config.ini
 
 <br>
 
